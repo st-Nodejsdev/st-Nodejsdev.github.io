@@ -1,3 +1,6 @@
 header {
 color:lightslategrey;
 }
+a {
+  color: inherit;
+}
