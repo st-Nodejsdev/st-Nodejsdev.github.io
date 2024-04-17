@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+    <meta charset="UTF-8">
+    <title>
+        生成车票_wiki
+    </title>
+    <header>
+        <i>自定义车票使用方法<br></i>
+        <i>留明 海兰德小助手使用指南 01-21 14:41<hr></i>
+    </header><body>
+        <i>使用指令前请完整阅读本wiki,如遇BUG欢迎反馈
+            <pre>
+                @海兰德小助手 /车票生成 车次{[发站,到站]发车时间,票价[席别,座位号]}售出站
+            </pre>
+            食用指南：<br>
+            推荐你将指令复制下来,将其中内容更改为自己所需要的文本<br>
+            指令实例：
+            <pre>
+                @海兰德小助手 /车票生成 G1{[北京南,上海虹桥]202101011001,1145.1[商务座,01车01A号]}
+            </pre>
+            指令注意事项：<br>
+            1.发站，到站，售出站只能填写中国大陆境内存在的车站，详细列表可查询<a rel="https://rail.re">rail.re</a><br>
+            2.指令内所有符号务必是半角符号<br>
+            3.请填写所有参数，目前暂不支持参数选填<br>
+            4.车次最多只能写入五个数字和字母<br>
+            5.发车时间请完整填写年月日小时分钟，填写格式：20240121148<br>
+            6.支持的列车级别有："K","T","Z","D","G","Y","S","C","DJ","L","N","A"<br>
+            7.支持的席别类型有：<pre>
+                高级动卧|混编硬座|混编硬卧|包厢软座|特等软座|动卧|二人软包|一人软包|一等卧|二等卧|混编软座|混编软卧|一等座|二等座|特等座|多功能座|二等包座|棚车|硬座|软座|硬卧|软卧|包厢硬卧|高级软卧|一等软座|二等软座|商务座|敞车|板车|行李车|挂票
+            </pre>
+            8.返回代码'404-1'，可能是你多打或少打了空格<br>
+            9.返回代码'404-2'，一般是你中英文符号问题，请检查符号是否全为英文<br>
+        </i>
+
+    </body><footer>
+    <a href="https://time.is/Beijing,_China" id="time_is_link" rel="nofollow">北京时间:</a>
+    <span id="Beijing__China_z43d"></span>
+    <script src="//widget.time.is/t.js"></script>
+    <script>
+        time_is_widget.init({Beijing__China_z43d:{}});
+    </script><p>如果没有显示请检查您与time.is的连接是否正常</p>
+    <p class="unioncode">本网页使用<a href="https://unicode.org">UTF-8</i>编码</p><footer>
+    </footer>
+</html>
