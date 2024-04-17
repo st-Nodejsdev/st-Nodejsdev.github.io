@@ -1,5 +1,9 @@
-header {
+.header .link {
 color:lightslategrey;
+background-color: blue;
+text-align: center;
+font-size: 40px;
+letter-spacing: 50px;
 }
 a {
   color: inherit;
