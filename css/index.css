@@ -1,60 +1,83 @@
 /* ==========================================================================
-   st-nodejsdev — Material 3 Expressive Design System
+   st-nodejsdev — Material 3 (Expressive) Design System
+   Strict spec-compliant implementation, fully self-hosted (no network).
+   Color tokens: official Material Theme Builder output (seed #6750A4, HCT).
+   Dark mode: toggled by [data-theme] OR followed via prefers-color-scheme.
    ========================================================================== */
 
-/* ----- Design Tokens ------------------------------------------------------ */
-:root {
-  /* Color roles — Light scheme (seed: #6750A4, expressive violet) */
-  --md-primary:               #65558f;
-  --md-on-primary:            #ffffff;
-  --md-primary-container:     #e9ddff;
-  --md-on-primary-container:  #211047;
-  --md-inverse-primary:       #cfbcff;
+/* ----- Self-hosted font --------------------------------------------------- */
+@font-face {
+  font-family: "Noto Sans";
+  src: url("/fonts/noto-sans-latin.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
-  --md-secondary:             #605c71;
+/* ==========================================================================
+   Design Tokens — Light scheme (default)
+   ========================================================================== */
+:root {
+  color-scheme: light;
+
+  /* --- Primary --- */
+  --md-primary:               #6750a4;
+  --md-on-primary:            #ffffff;
+  --md-primary-container:     #eaddff;
+  --md-on-primary-container:  #21005d;
+  --md-inverse-primary:       #d0bcff;
+
+  /* --- Secondary --- */
+  --md-secondary:             #625b71;
   --md-on-secondary:          #ffffff;
-  --md-secondary-container:   #e6dff9;
+  --md-secondary-container:   #e8def8;
   --md-on-secondary-container:#1d192b;
 
+  /* --- Tertiary --- */
   --md-tertiary:              #7d5260;
   --md-on-tertiary:           #ffffff;
   --md-tertiary-container:    #ffd8e4;
-  --md-on-tertiary-container: #31101d;
+  --md-on-tertiary-container: #31111d;
 
+  /* --- Error --- */
   --md-error:                 #b3261e;
   --md-on-error:              #ffffff;
   --md-error-container:       #f9dedc;
   --md-on-error-container:    #410e0b;
 
-  --md-background:            #fef7ff;
-  --md-on-background:         #1d1b20;
-  --md-surface:               #fef7ff;
-  --md-on-surface:            #1d1b20;
-  --md-surface-variant:       #e7e0ec;
-  --md-on-surface-variant:    #49454f;
-  --md-surface-dim:           #ded8e1;
-  --md-surface-bright:        #fef7ff;
-  --md-surface-container-lowest:#ffffff;
-  --md-surface-container-low: #f7f2fa;
-  --md-surface-container:     #f3edf7;
-  --md-surface-container-high:#ece6f0;
+  /* --- Neutral / Surface --- */
+  --md-background:               #fef7ff;
+  --md-on-background:            #1d1b20;
+  --md-surface:                  #fef7ff;
+  --md-on-surface:               #1d1b20;
+  --md-surface-variant:          #e7e0ec;
+  --md-on-surface-variant:       #49454f;
+  --md-surface-dim:              #ded8e0;
+  --md-surface-bright:           #fef7ff;
+  --md-surface-container-lowest: #ffffff;
+  --md-surface-container-low:    #f7f2fa;
+  --md-surface-container:        #f3edf7;
+  --md-surface-container-high:   #ece6f0;
   --md-surface-container-highest:#e6e0e9;
-  --md-inverse-surface:       #322f35;
-  --md-inverse-on-surface:    #f5eff7;
-  --md-outline:               #79747e;
-  --md-outline-variant:       #cac4d0;
 
-  /* Expressive accents — used for gradients / chips */
-  --md-expressive-1: #ff7ab6;
-  --md-expressive-2: #ffb4a4;
-  --md-expressive-3: #ffd84d;
-  --md-expressive-4: #7bd87d;
-  --md-expressive-5: #5ec8ff;
+  --md-outline:          #79747e;
+  --md-outline-variant:  #cac4d0;
 
-  /* Typography */
-  --md-font-base: "Roboto Flex", "Google Sans", "Noto Sans SC", -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --md-font-mono: "JetBrains Mono", "Fira Code", ui-monospace, "Cascadia Code", "Consolas", monospace;
+  --md-inverse-surface:    #322f36;
+  --md-inverse-on-surface: #f5eff7;
 
+  --md-scrim: #000000;
+  --md-shadow: #000000;
+  --md-surface-tint: var(--md-primary);  /* = primary, per spec */
+
+  /* --- Typography --- */
+  --md-font-base: "Noto Sans", "Noto Sans SC", "Noto Sans CJK SC",
+                  "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB",
+                  system-ui, -apple-system, "Segoe UI", sans-serif;
+  --md-font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code",
+                  "Consolas", "Courier New", monospace;
+
+  /* M3 type scale */
   --md-fs-display-l: 57px; --md-fl-display-l: 64px; --md-fw-display-l: 400;
   --md-fs-display-m: 45px; --md-fl-display-m: 52px; --md-fw-display-m: 400;
   --md-fs-display-s: 36px; --md-fl-display-s: 44px; --md-fw-display-s: 400;
@@ -69,86 +92,139 @@
   --md-fs-body-s:    12px; --md-fl-body-s:    16px; --md-fw-body-s:    400;
   --md-fs-label-l:   14px; --md-fl-label-l:   20px; --md-fw-label-l:   500;
   --md-fs-label-m:   12px; --md-fl-label-m:   16px; --md-fw-label-m:   500;
+  --md-fs-label-s:   11px; --md-fl-label-s:   16px; --md-fw-label-s:   500;
 
-  /* Shape — expressive mix of radii */
-  --md-shape-xs:   4px;
-  --md-shape-sm:   8px;
-  --md-shape-md:  12px;
-  --md-shape-lg:  16px;
-  --md-shape-xl:  28px;
-  --md-shape-2xl: 36px;
-  --md-shape-full: 9999px;
+  /* --- Shape scale (M3 + Expressive) --- */
+  --md-shape-xs:    4px;   /* extra-small: Snackbar, menu items */
+  --md-shape-sm:    8px;   /* small: chips, rich tooltips */
+  --md-shape-md:   12px;   /* medium: filled cards (Expressive bumps) */
+  --md-shape-lg:   16px;   /* large: dialogs, navigation drawers */
+  --md-shape-xl:   28px;   /* extra-large: FAB, large cards, search */
+  --md-shape-2xl:  36px;   /* Expressive: hero / bento blocks */
+  --md-shape-full: 9999px; /* buttons, text fields, extended FAB */
 
-  /* Motion — expressive spring */
-  --md-easing-standard:   cubic-bezier(0.20, 0.00, 0.00, 1.00);
-  --md-easing-emphasized: cubic-bezier(0.20, 0.00, 0.00, 1.00);
-  --md-easing-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
-  --md-duration-short1:  50ms;
-  --md-duration-short2: 100ms;
-  --md-duration-short3: 150ms;
-  --md-duration-short4: 200ms;
-  --md-duration-medium1:250ms;
-  --md-duration-medium2:300ms;
-  --md-duration-medium3:350ms;
-  --md-duration-medium4:400ms;
-  --md-duration-long1:  450ms;
-  --md-duration-long2:  500ms;
+  /* --- Elevation: official M3 shadow strings --- */
+  --md-elev-0: none;
+  --md-elev-1: 0px 1px 2px 0px rgba(0,0,0,0.30), 0px 1px 3px 1px rgba(0,0,0,0.15);
+  --md-elev-2: 0px 1px 2px 0px rgba(0,0,0,0.30), 0px 2px 6px 2px rgba(0,0,0,0.15);
+  --md-elev-3: 0px 4px 8px 3px rgba(0,0,0,0.15), 0px 1px 3px 0px rgba(0,0,0,0.30);
+  --md-elev-4: 0px 6px 10px 4px rgba(0,0,0,0.15), 0px 2px 3px 0px rgba(0,0,0,0.30);
+  --md-elev-5: 0px 8px 12px 6px rgba(0,0,0,0.15), 0px 4px 4px 0px rgba(0,0,0,0.30);
 
-  /* Elevation (tonal + shadow) */
-  --md-elev-0:  none;
-  --md-elev-1:  0 1px 2px rgba(0,0,0,.30), 0 1px 3px 1px rgba(0,0,0,.15);
-  --md-elev-2:  0 1px 2px rgba(0,0,0,.30), 0 2px 6px 2px rgba(0,0,0,.15);
-  --md-elev-3:  0 1px 3px rgba(0,0,0,.30), 0 4px 8px 3px rgba(0,0,0,.15);
+  /* tonal elevation: surface-tint overlay opacity per level */
+  --md-tint-0: 0%;
+  --md-tint-1: 5%;
+  --md-tint-2: 8%;
+  --md-tint-3: 11%;
+  --md-tint-4: 12%;
+  --md-tint-5: 14%;
 
-  /* Layout */
-  --md-page-max:  1200px;
-  --md-gap:       24px;
+  /* --- Motion (M3) --- */
+  --md-easing-standard:        cubic-bezier(0.20, 0.00, 0.00, 1.00);
+  --md-easing-standard-decel:  cubic-bezier(0.00, 0.00, 0.00, 1.00);
+  --md-easing-standard-accel:  cubic-bezier(0.30, 0.00, 1.00, 1.00);
+  --md-easing-emphasized:      cubic-bezier(0.20, 0.00, 0.00, 1.00);
+  --md-easing-emphasized-decel:cubic-bezier(0.05, 0.70, 0.10, 1.00);
+  --md-easing-emphasized-accel:cubic-bezier(0.30, 0.00, 0.80, 0.15);
+  /* Expressive spring (overshoot) — CSS approximation; true spring via JS */
+  --md-easing-spring:          cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --md-d-1:  50ms;  --md-d-2: 100ms;  --md-d-3: 150ms;  --md-d-4: 200ms;
+  --md-d-5: 250ms;  --md-d-6: 300ms;  --md-d-7: 350ms;  --md-d-8: 400ms;
+  --md-d-9: 450ms; --md-d-10: 500ms; --md-d-11: 550ms; --md-d-12: 600ms;
+
+  /* --- State layer opacities (spec) --- */
+  --md-state-hover:   0.08;
+  --md-state-focus:   0.10;
+  --md-state-pressed: 0.12;
+  --md-state-dragged: 0.16;
+
+  /* --- Layout --- */
+  --md-page-max: 1200px;
+  --md-gap:      24px;
+  /* focus ring token */
+  --md-focus-ring: var(--md-primary);
+}
+
+/* ==========================================================================
+   Design Tokens — Dark scheme
+   Applied by explicit choice OR by system preference (when no explicit choice)
+   ========================================================================== */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --md-primary:               #d0bcff;
+  --md-on-primary:            #381e72;
+  --md-primary-container:     #4f378b;
+  --md-on-primary-container:  #eaddff;
+  --md-inverse-primary:       #6750a4;
+
+  --md-secondary:             #ccc2dc;
+  --md-on-secondary:          #332d41;
+  --md-secondary-container:   #4a4458;
+  --md-on-secondary-container:#e8def8;
+
+  --md-tertiary:              #efb8c8;
+  --md-on-tertiary:           #492532;
+  --md-tertiary-container:    #633b48;
+  --md-on-tertiary-container: #ffd8e4;
+
+  --md-error:                 #f2b8b5;
+  --md-on-error:              #601410;
+  --md-error-container:       #8c1d18;
+  --md-on-error-container:    #f9dedc;
+
+  --md-background:               #141218;
+  --md-on-background:            #e6e0e9;
+  --md-surface:                  #141218;
+  --md-on-surface:               #e6e0e9;
+  --md-surface-variant:          #49454f;
+  --md-on-surface-variant:       #cac4d0;
+  --md-surface-dim:              #141218;
+  --md-surface-bright:           #3b383e;
+  --md-surface-container-lowest: #0f0d13;
+  --md-surface-container-low:    #1d1b20;
+  --md-surface-container:        #211f26;
+  --md-surface-container-high:   #2b2930;
+  --md-surface-container-highest:#36343b;
+
+  --md-outline:         #938f99;
+  --md-outline-variant: #49454f;
+
+  --md-inverse-surface:    #e6e0e9;
+  --md-inverse-on-surface: #322f36;
+  --md-surface-tint: var(--md-primary);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --md-primary:               #cfbcff;
-    --md-on-primary:            #381e72;
-    --md-primary-container:     #4f378b;
-    --md-on-primary-container:  #e9ddff;
-    --md-inverse-primary:       #65558f;
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    color-scheme: dark;
 
-    --md-secondary:             #cac3dc;
-    --md-on-secondary:          #2b2938;
-    --md-secondary-container:   #474556;
-    --md-on-secondary-container:#e6dff9;
-
-    --md-tertiary:              #efb8c8;
-    --md-on-tertiary:           #492532;
-    --md-tertiary-container:    #633b48;
-    --md-on-tertiary-container: #ffd8e4;
-
-    --md-error:                 #f2b8b5;
-    --md-on-error:              #601410;
-    --md-error-container:       #8c1d18;
-    --md-on-error-container:    #f9dedc;
-
-    --md-background:            #141218;
-    --md-on-background:         #e6e0e9;
-    --md-surface:               #141218;
-    --md-on-surface:            #e6e0e9;
-    --md-surface-variant:       #49454f;
-    --md-on-surface-variant:    #cac4d0;
-    --md-surface-dim:           #141218;
-    --md-surface-bright:        #3b383e;
-    --md-surface-container-lowest:#0f0d13;
-    --md-surface-container-low: #1d1b20;
-    --md-surface-container:     #211f26;
-    --md-surface-container-high:#2b2930;
-    --md-surface-container-highest:#36343b;
-    --md-inverse-surface:       #e6e0e9;
-    --md-inverse-on-surface:    #322f35;
-    --md-outline:               #938f99;
-    --md-outline-variant:       #49454f;
+    --md-primary: #d0bcff; --md-on-primary: #381e72;
+    --md-primary-container: #4f378b; --md-on-primary-container: #eaddff;
+    --md-inverse-primary: #6750a4;
+    --md-secondary: #ccc2dc; --md-on-secondary: #332d41;
+    --md-secondary-container: #4a4458; --md-on-secondary-container: #e8def8;
+    --md-tertiary: #efb8c8; --md-on-tertiary: #492532;
+    --md-tertiary-container: #633b48; --md-on-tertiary-container: #ffd8e4;
+    --md-error: #f2b8b5; --md-on-error: #601410;
+    --md-error-container: #8c1d18; --md-on-error-container: #f9dedc;
+    --md-background: #141218; --md-on-background: #e6e0e9;
+    --md-surface: #141218; --md-on-surface: #e6e0e9;
+    --md-surface-variant: #49454f; --md-on-surface-variant: #cac4d0;
+    --md-surface-dim: #141218; --md-surface-bright: #3b383e;
+    --md-surface-container-lowest: #0f0d13; --md-surface-container-low: #1d1b20;
+    --md-surface-container: #211f26; --md-surface-container-high: #2b2930;
+    --md-surface-container-highest: #36343b;
+    --md-outline: #938f99; --md-outline-variant: #49454f;
+    --md-inverse-surface: #e6e0e9; --md-inverse-on-surface: #322f36;
+    --md-surface-tint: var(--md-primary);
   }
 }
 
-/* ----- Reset & Base ------------------------------------------------------- */
+/* ==========================================================================
+   Reset & base
+   ========================================================================== */
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
@@ -159,98 +235,117 @@ html {
 
 body {
   margin: 0;
-  font-family: var(--md-font-base);
-  font-size: var(--md-fs-body-l);
-  line-height: var(--md-fl-body-l);
-  color: var(--md-on-surface);
-  background: var(--md-background);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  font-family: var(--md-font-base);
+  font-size: var(--md-fs-body-l);
+  line-height: var(--md-fl-body-l);
+  font-weight: var(--md-fw-body-l);
+  color: var(--md-on-surface);
+  background: var(--md-background);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
 }
 
 a {
   color: var(--md-primary);
   text-decoration: none;
-  transition: color var(--md-duration-short3) var(--md-easing-standard);
+  transition: color var(--md-d-3) var(--md-easing-standard);
 }
 a:hover { text-decoration: underline; }
 
 img { max-width: 100%; display: block; }
-pre, code, kbd { font-family: var(--md-font-mono); }
+pre, code, kbd, samp { font-family: var(--md-font-mono); }
 
-h1, h2, h3, h4, h5, h6 { margin: 0; font-weight: var(--md-fw-head-l); }
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: var(--md-fw-head-l);
+  letter-spacing: 0;
+}
 p { margin: 0 0 var(--md-gap) 0; }
 
+/* Focus indicator — 3px outer ring, M3 focus-ring token */
 :focus-visible {
-  outline: 3px solid var(--md-primary);
+  outline: 3px solid var(--md-focus-ring);
   outline-offset: 2px;
   border-radius: var(--md-shape-xs);
 }
 
-/* ----- Top App Bar -------------------------------------------------------- */
+/* ==========================================================================
+   Top app bar
+   ========================================================================== */
 .md-topbar {
   position: sticky;
   top: 0;
   z-index: 50;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px 20px;
-  background: var(--md-surface-container);
+  gap: 12px;
+  min-height: 64px;
+  padding: 8px 16px;
+  background: var(--md-surface);
   color: var(--md-on-surface);
+  /* M3 top app bar: elevation 0 resting, 2 on scroll (added via JS .is-raised) */
   box-shadow: var(--md-elev-0);
-  backdrop-filter: saturate(180%) blur(12px);
+  transition: box-shadow var(--md-d-5) var(--md-easing-emphasized),
+              background-color var(--md-d-3) var(--md-easing-standard);
 }
+.md-topbar.is-raised {
+  background: var(--md-surface-container);
+  box-shadow: var(--md-elev-2);
+}
+.md-topbar--dense { min-height: 56px; padding: 4px 8px; gap: 4px; }
+
 .md-topbar__title {
+  flex: 1;
   font-size: var(--md-fs-title-l);
   line-height: var(--md-fl-title-l);
-  font-weight: 500;
-  flex: 1;
+  font-weight: var(--md-fw-title-l);
   color: var(--md-on-surface);
 }
 .md-topbar__title a { color: inherit; }
 .md-topbar__title a:hover { text-decoration: none; }
 
-.md-topbar--dense {
-  padding: 8px 12px;
-  gap: 8px;
-}
+.md-topbar__nav { display: flex; align-items: center; gap: 4px; }
 
-/* ----- Buttons ------------------------------------------------------------ */
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
 .md-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 0 24px;
   height: 40px;
-  border-radius: var(--md-shape-full);
+  padding: 0 24px;
   border: none;
+  border-radius: var(--md-shape-full);
   font-family: inherit;
   font-size: var(--md-fs-label-l);
-  font-weight: 500;
-  letter-spacing: .01em;
+  line-height: var(--md-fl-label-l);
+  font-weight: var(--md-fw-label-l);
+  letter-spacing: 0.1px;
   cursor: pointer;
   user-select: none;
   text-decoration: none;
-  position: relative;
   overflow: hidden;
-  transition:
-    background-color var(--md-duration-short3) var(--md-easing-standard),
-    box-shadow   var(--md-duration-short3) var(--md-easing-standard),
-    transform    var(--md-duration-short3) var(--md-easing-spring);
+  -webkit-tap-highlight-color: transparent;
+  transition: box-shadow var(--md-d-3) var(--md-easing-standard),
+              background-color var(--md-d-3) var(--md-easing-standard),
+              transform var(--md-d-3) var(--md-easing-spring);
 }
-.md-btn:active { transform: scale(.97); }
 .md-btn:hover  { text-decoration: none; }
+.md-btn:active { transform: scale(0.96); }
 
 .md-btn--filled {
   background: var(--md-primary);
   color: var(--md-on-primary);
 }
-.md-btn--filled:hover  { box-shadow: var(--md-elev-1); }
+.md-btn--filled:hover { box-shadow: var(--md-elev-1); }
 
 .md-btn--tonal {
   background: var(--md-secondary-container);
@@ -261,107 +356,144 @@ p { margin: 0 0 var(--md-gap) 0; }
   background: transparent;
   color: var(--md-primary);
   box-shadow: inset 0 0 0 1px var(--md-outline);
+  padding: 0 23px; /* compensate 1px outline */
 }
-.md-btn--outlined:hover { background: var(--md-primary-container); color: var(--md-on-primary-container); }
 
 .md-btn--text {
   background: transparent;
   color: var(--md-primary);
   padding: 0 12px;
 }
-.md-btn--text:hover { background: color-mix(in srgb, var(--md-primary) 8%, transparent); }
 
-/* State-layer hover overlay (works on any md-btn) */
+/* State layer — color = currentColor (content color), spec opacities */
 .md-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-d-3) var(--md-easing-standard);
+}
+.md-btn:hover::after  { opacity: var(--md-state-hover); }
+.md-btn:focus-visible::after { opacity: var(--md-state-focus); }
+.md-btn:active::after { opacity: var(--md-state-pressed); }
+
+/* ==========================================================================
+   Icon button (standard, 40dp)
+   ========================================================================== */
+.md-icon-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--md-shape-full);
+  background: transparent;
+  color: var(--md-on-surface-variant);
+  cursor: pointer;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--md-d-3) var(--md-easing-standard);
+}
+.md-icon-btn svg { width: 24px; height: 24px; }
+.md-icon-btn::after {
   content: "";
   position: absolute; inset: 0;
   background: currentColor;
   opacity: 0;
-  transition: opacity var(--md-duration-short3) var(--md-easing-standard);
   pointer-events: none;
+  transition: opacity var(--md-d-3) var(--md-easing-standard);
 }
-.md-btn:hover::after  { opacity: .08; }
-.md-btn:focus::after  { opacity: .10; }
-.md-btn:active::after { opacity: .12; }
+.md-icon-btn:hover::after  { opacity: var(--md-state-hover); }
+.md-icon-btn:focus-visible::after { opacity: var(--md-state-focus); }
+.md-icon-btn:active::after { opacity: var(--md-state-pressed); }
 
-/* ----- Icon Button -------------------------------------------------------- */
-.md-icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px; height: 40px;
-  border-radius: var(--md-shape-full);
-  border: none;
-  background: transparent;
-  color: var(--md-on-surface-variant);
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: background-color var(--md-duration-short3) var(--md-easing-standard);
-}
-.md-icon-btn:hover { background: color-mix(in srgb, var(--md-on-surface) 8%, transparent); }
-.md-icon-btn svg { width: 24px; height: 24px; }
-
-/* ----- Cards -------------------------------------------------------------- */
+/* ==========================================================================
+   Filled card (Elevated/Filled/Outlined share container treatment)
+   ========================================================================== */
 .md-card {
+  position: relative;
   display: block;
+  padding: 24px;
+  border-radius: var(--md-shape-xl);   /* expressive large shape */
   background: var(--md-surface-container-low);
   color: var(--md-on-surface);
-  border-radius: var(--md-shape-xl);
-  padding: 24px;
   text-decoration: none;
-  position: relative;
   overflow: hidden;
-  transition:
-    background-color var(--md-duration-short3) var(--md-easing-standard),
-    box-shadow       var(--md-duration-medium2) var(--md-easing-emphasized),
-    transform        var(--md-duration-medium2) var(--md-easing-spring);
+  box-shadow: var(--md-elev-0);
+  transition: box-shadow var(--md-d-6) var(--md-easing-emphasized),
+              background-color var(--md-d-3) var(--md-easing-standard),
+              transform var(--md-d-6) var(--md-easing-spring);
 }
 a.md-card { color: inherit; }
 a.md-card:hover {
-  background: var(--md-surface-container);
+  background: var(--md-surface-container-high);
   box-shadow: var(--md-elev-2);
-  transform: translateY(-2px);
   text-decoration: none;
 }
+a.md-card:active { transform: scale(0.99); }
+
+/* State layer (interactive cards) */
+a.md-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--md-on-surface);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-d-3) var(--md-easing-standard);
+}
+a.md-card:hover::after  { opacity: var(--md-state-hover); }
+a.md-card:focus-visible::after { opacity: var(--md-state-focus); }
+a.md-card:active::after { opacity: var(--md-state-pressed); }
+
+.md-card--outlined {
+  background: var(--md-surface-container-lowest);
+  box-shadow: inset 0 0 0 1px var(--md-outline-variant);
+}
+
 .md-card__eyebrow {
   font-size: var(--md-fs-label-m);
-  font-weight: 500;
-  letter-spacing: .08em;
-  text-transform: uppercase;
+  line-height: var(--md-fl-label-m);
+  font-weight: var(--md-fw-label-m);
+  letter-spacing: 0.5px;
   color: var(--md-primary);
   margin-bottom: 8px;
 }
 .md-card__title {
   font-size: var(--md-fs-head-s);
   line-height: var(--md-fl-head-s);
+  font-weight: var(--md-fw-head-s);
   margin-bottom: 8px;
-  font-weight: 500;
 }
 .md-card__body {
   font-size: var(--md-fs-body-m);
   line-height: var(--md-fl-body-m);
   color: var(--md-on-surface-variant);
 }
+.md-card > *:last-child { margin-bottom: 0; }
+.md-card > *:first-child { margin-top: 0; }
 
-/* Decorative expressive gradient corner — gives cards expressive pop */
-.md-card--accent::before {
-  content: "";
-  position: absolute;
-  inset: auto -40% -40% auto;
-  width: 180px; height: 180px;
-  background: conic-gradient(from 220deg,
-    var(--md-expressive-1), var(--md-expressive-3),
-    var(--md-expressive-4), var(--md-expressive-5),
-    var(--md-expressive-1));
-  filter: blur(28px);
-  opacity: .35;
-  pointer-events: none;
-  transition: opacity var(--md-duration-medium3) var(--md-easing-emphasized);
+/* Expressive color-rich card variant using spec container roles (no arbitrary gradients) */
+.md-card--primary   { background: var(--md-primary-container);   color: var(--md-on-primary-container); }
+.md-card--secondary { background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
+.md-card--tertiary  { background: var(--md-tertiary-container);  color: var(--md-on-tertiary-container); }
+.md-card--primary .md-card__eyebrow,
+.md-card--secondary .md-card__eyebrow,
+.md-card--tertiary .md-card__eyebrow { color: inherit; opacity: 0.85; }
+.md-card--primary .md-card__body,
+.md-card--secondary .md-card__body,
+.md-card--tertiary .md-card__body { color: inherit; opacity: 0.9; }
+a.md-card--primary:hover, a.md-card--secondary:hover, a.md-card--tertiary:hover {
+  filter: brightness(0.97);
 }
-.md-card--accent:hover::before { opacity: .55; }
 
-/* ----- Chips -------------------------------------------------------------- */
+/* ==========================================================================
+   Assist chips
+   ========================================================================== */
 .md-chip {
   display: inline-flex;
   align-items: center;
@@ -369,56 +501,72 @@ a.md-card:hover {
   height: 32px;
   padding: 0 16px;
   border-radius: var(--md-shape-sm);
-  background: var(--md-surface-container-high);
-  color: var(--md-on-surface-variant);
-  font-size: var(--md-fs-label-l);
-  font-weight: 500;
-  text-decoration: none;
-  transition: background-color var(--md-duration-short3) var(--md-easing-standard);
-}
-a.md-chip:hover { background: var(--md-surface-container-highest); text-decoration: none; color: inherit; }
-
-/* ----- Lists -------------------------------------------------------------- */
-.md-list {
-  list-style: none;
-  margin: 0;
-  padding: 8px;
   background: var(--md-surface-container-low);
-  border-radius: var(--md-shape-lg);
+  color: var(--md-on-surface-variant);
+  font-family: inherit;
+  font-size: var(--md-fs-label-l);
+  line-height: var(--md-fl-label-l);
+  font-weight: var(--md-fw-label-l);
+  text-decoration: none;
 }
+a.md-chip { color: inherit; }
+
+/* ==========================================================================
+   List
+   ========================================================================== */
+.md-list { list-style: none; margin: 0; padding: 8px; }
 .md-list__item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 12px 16px;
-  border-radius: var(--md-shape-md);
-  color: inherit;
+  min-height: 56px;
+  padding: 8px 16px;
+  border-radius: var(--md-shape-full);
+  color: var(--md-on-surface);
   text-decoration: none;
-  transition: background-color var(--md-duration-short3) var(--md-easing-standard);
 }
-a.md-list__item:hover { background: var(--md-surface-container-high); text-decoration: none; color: inherit; }
+a.md-list__item { color: inherit; }
+.md-list__item__text { font-size: var(--md-fs-body-l); }
+.md-list__item__support { color: var(--md-on-surface-variant); font-size: var(--md-fs-body-m); }
+a.md-list__item::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: var(--md-on-surface);
+  opacity: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  transition: opacity var(--md-d-3) var(--md-easing-standard);
+}
+a.md-list__item:hover::after  { opacity: var(--md-state-hover); }
+a.md-list__item:focus-visible::after { opacity: var(--md-state-focus); }
+a.md-list__item:active::after { opacity: var(--md-state-pressed); }
 
-/* ----- Code & Kbd --------------------------------------------------------- */
+/* ==========================================================================
+   Code blocks
+   ========================================================================== */
 pre {
   background: var(--md-surface-container-high);
   color: var(--md-on-surface);
   padding: 16px 20px;
-  border-radius: var(--md-shape-lg);
+  border-radius: var(--md-shape-md);
   overflow-x: auto;
   margin: 0 0 16px 0;
   font-size: var(--md-fs-body-m);
-  line-height: 1.5;
-  border-inline-start: 4px solid var(--md-primary);
+  line-height: 1.6;
+  box-shadow: inset 0 0 0 1px var(--md-outline-variant);
 }
-code { color: var(--md-primary); }
 pre code { color: inherit; }
+code { color: var(--md-primary); }
 
-/* ----- Layout helpers ----------------------------------------------------- */
+/* ==========================================================================
+   Layout helpers
+   ========================================================================== */
 .md-container {
   width: 100%;
   max-width: var(--md-page-max);
   margin: 0 auto;
-  padding: 32px 20px;
+  padding: 24px 16px 48px;
   flex: 1 0 auto;
 }
 .md-grid {
@@ -426,23 +574,25 @@ pre code { color: inherit; }
   gap: var(--md-gap);
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
+.md-grid--bento {
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
 .md-section-title {
+  margin: 32px 0 16px;
   font-size: var(--md-fs-head-m);
   line-height: var(--md-fl-head-m);
-  margin: 24px 0 16px;
+  font-weight: var(--md-fw-head-m);
 }
 .md-stack { display: flex; flex-direction: column; gap: 16px; }
-.md-row   { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.md-row   { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 
-/* Hero / expressive banner */
+/* Hero — expressive large shape, spec surface, no arbitrary gradients */
 .md-hero {
   position: relative;
   padding: 48px 32px;
   border-radius: var(--md-shape-2xl);
-  background:
-    radial-gradient(1100px 400px at 0% 0%, color-mix(in srgb, var(--md-primary) 35%, transparent), transparent 70%),
-    radial-gradient(900px 500px at 100% 0%, color-mix(in srgb, var(--md-tertiary) 30%, transparent), transparent 70%),
-    var(--md-surface-container);
+  background: var(--md-surface-container);
   color: var(--md-on-surface);
   overflow: hidden;
   margin-bottom: 32px;
@@ -451,8 +601,8 @@ pre code { color: inherit; }
   font-size: var(--md-fs-display-m);
   line-height: var(--md-fl-display-m);
   font-weight: 500;
-  margin: 0 0 12px 0;
-  letter-spacing: -.01em;
+  letter-spacing: -0.5px;
+  margin: 0 0 12px;
 }
 .md-hero__subtitle {
   font-size: var(--md-fs-title-m);
@@ -461,61 +611,65 @@ pre code { color: inherit; }
   max-width: 60ch;
   margin: 0;
 }
+.md-hero__eyebrow {
+  font-size: var(--md-fs-label-l);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: var(--md-primary);
+  margin-bottom: 8px;
+}
 
-/* ----- Footer ------------------------------------------------------------- */
+/* ==========================================================================
+   Footer
+   ========================================================================== */
 .md-footer {
+  margin-top: auto;
+  padding: 24px 16px;
   background: var(--md-surface-container);
   color: var(--md-on-surface-variant);
-  padding: 24px 20px;
   font-size: var(--md-fs-body-m);
-  margin-top: auto;
 }
 .md-footer__inner {
   max-width: var(--md-page-max);
   margin: 0 auto;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 24px;
+  gap: 8px 24px;
   align-items: center;
   justify-content: space-between;
 }
 .md-footer a { color: var(--md-primary); }
-.md-footer__note { opacity: .8; font-size: var(--md-fs-body-s); }
-
-/* Time widget */
-.md-time {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
+.md-footer__note { font-size: var(--md-fs-body-s); opacity: 0.85; }
+.md-time { display: inline-flex; align-items: center; gap: 6px; }
 .md-time #Beijing__China_z43d {
   font-variant-numeric: tabular-nums;
   font-weight: 500;
   color: var(--md-on-surface);
 }
 
-/* ----- Tables ------------------------------------------------------------- */
+/* ==========================================================================
+   Table
+   ========================================================================== */
 table {
   width: 100%;
   border-collapse: collapse;
   background: var(--md-surface-container-low);
   border-radius: var(--md-shape-lg);
   overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--md-outline-variant);
 }
-th, td {
-  padding: 12px 16px;
-  text-align: left;
-  border-bottom: 1px solid var(--md-outline-variant);
-}
+th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--md-outline-variant); }
 th { background: var(--md-surface-container-high); font-weight: 500; }
 tr:last-child td { border-bottom: none; }
 
-/* ----- Accessibility ------------------------------------------------------ */
+/* ==========================================================================
+   Accessibility
+   ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    animation-duration: .01ms !important;
+    animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: .01ms !important;
+    transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 }

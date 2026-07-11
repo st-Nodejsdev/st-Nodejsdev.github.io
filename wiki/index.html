@@ -5,27 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="st-nodejsdev 使用文档 — 海兰德小助手指令说明">
     <link rel="stylesheet" href="/css/index.css">
+    <script src="/js/theme.js"></script>
     <title>使用文档 — st-nodejsdev</title>
 </head>
 <body>
     <header class="md-topbar md-topbar--dense">
-        <a href="/index.html" class="md-icon-btn" aria-label="返回首页" title="返回首页">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M19 11H7.83l4.88-4.88a1 1 0 1 0-1.42-1.41l-6.59 6.58a1 1 0 0 0 0 1.42l6.59 6.58a1 1 0 0 0 1.42-1.41L7.83 13H19a1 1 0 0 0 0-2z"/>
-            </svg>
+        <a href="/index.html" class="md-icon-btn" data-md-ripple aria-label="返回首页" title="返回首页">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         </a>
         <span class="md-topbar__title">使用文档</span>
+        <button class="md-icon-btn" type="button" data-md-theme-toggle data-md-ripple aria-label="切换主题">
+            <svg data-icon="sun" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13l2 .01c.55 0 1-.45 1-1s-.45-1-1-1L2 11c-.55 0-1 .45-1 1s.45 1 1 1zm18 0l2 .01c.55 0 1-.45 1-1s-.45-1-1-1l-2 .01c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0a.996.996 0 0 0 0-1.41l-1.06-1.06zm1.06-10.96a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>
+            <svg data-icon="moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+        </button>
     </header>
 
     <main class="md-container">
         <section class="md-hero">
+            <p class="md-hero__eyebrow">Docs</p>
             <h1 class="md-hero__title">使用文档</h1>
             <p class="md-hero__subtitle">查阅海兰德小助手等产品的指令说明与功能介绍。</p>
         </section>
 
         <h2 class="md-section-title">海兰德 wiki</h2>
         <div class="md-grid">
-            <a class="md-card md-card--accent" href="/wiki/CPSC.html">
+            <a class="md-card md-card--secondary" href="/wiki/CPSC.html">
                 <div class="md-card__eyebrow">指令</div>
                 <div class="md-card__title">生成车票</div>
                 <p class="md-card__body">使用 <code>/车票生成</code> 指令自定义中国铁路风格的车票。</p>
@@ -44,5 +48,6 @@
         <script src="//widget.time.is/t.js"></script>
         <script>time_is_widget.init({Beijing__China_z43d:{}});</script>
     </footer>
+    <script src="/js/ripple.js"></script>
 </body>
 </html>
