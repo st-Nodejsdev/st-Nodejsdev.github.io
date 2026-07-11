@@ -1,31 +1,87 @@
 <!DOCTYPE html>
-<html lang="zh-cn"></html>
-<meta charset="UTF-8">
-<link rel="stylesheet" href="/css/index.css">
-<title>
-    st-nodejsdev开发组
-</title>
-<header>
-    <a class="arona" href="/QQ_bot/arona_bot.html">阿罗娜</p>
-    <a class="highland" href="/QQ_bot/highland_bot.html">海兰德</p>
-    <a href="/Developer/About.html" class="about">关于我们</a>
-</header>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="st-nodejsdev 开发组 — QQ 机器人阿罗娜 / 海兰德，以及使用文档">
+    <link rel="stylesheet" href="/css/index.css">
+    <title>st-nodejsdev 开发组</title>
+</head>
 <body>
-    <div class="official">
-        <p class="tel">电话订票<a href="tel:95105105" class="tel">95105105</a></p>
-        <p class="railway">网络订票<a href="https://kyfw.12306.cn">12306</a></p>
-        
-    </div>
-    <div class="wiki">
-        <a href="/wiki/index.html" class="wiki">使用文档</a>
-    </div>
+    <header class="md-topbar">
+        <span class="md-topbar__title">st-nodejsdev 开发组</span>
+        <nav class="md-row" aria-label="主导航">
+            <a class="md-btn md-btn--text" href="/Developer/About.html">关于我们</a>
+            <a class="md-btn md-btn--tonal" href="/wiki/index.html">使用文档</a>
+        </nav>
+    </header>
+
+    <main class="md-container">
+        <section class="md-hero">
+            <h1 class="md-hero__title">你好，欢迎来到 st-nodejsdev</h1>
+            <p class="md-hero__subtitle">我们是一支专注于 QQ 机器人开发的小型团队。在此获取阿罗娜、海兰德的接入信息与使用指南。</p>
+        </section>
+
+        <h2 class="md-section-title">QQ 机器人</h2>
+        <div class="md-grid">
+            <a class="md-card md-card--accent" href="/QQ_bot/arona_bot.html">
+                <div class="md-card__eyebrow">Bot</div>
+                <div class="md-card__title">阿罗娜</div>
+                <p class="md-card__body">阿罗娜小助手，为您提供便捷的群内互动体验。</p>
+            </a>
+            <a class="md-card md-card--accent" href="/QQ_bot/highland_bot.html">
+                <div class="md-card__eyebrow">Bot</div>
+                <div class="md-card__title">海兰德</div>
+                <p class="md-card__body">海兰德小助手，支持车票生成等丰富指令。</p>
+            </a>
+        </div>
+
+        <h2 class="md-section-title">资源</h2>
+        <div class="md-grid">
+            <a class="md-card" href="/wiki/index.html">
+                <div class="md-card__eyebrow">Docs</div>
+                <div class="md-card__title">使用文档</div>
+                <p class="md-card__body">查阅机器人的指令说明与功能列表。</p>
+            </a>
+            <a class="md-card" href="/Developer/About.html">
+                <div class="md-card__eyebrow">About</div>
+                <div class="md-card__title">关于我们</div>
+                <p class="md-card__body">了解开发组成员与项目背景。</p>
+            </a>
+            <a class="md-card" href="/Developer/Donation.html">
+                <div class="md-card__eyebrow">Support</div>
+                <div class="md-card__title">赞助我们</div>
+                <p class="md-card__body">通过爱发电支持我们的开发工作。</p>
+            </a>
+        </div>
+
+        <h2 class="md-section-title">出行工具</h2>
+        <div class="md-grid">
+            <div class="md-card">
+                <div class="md-card__eyebrow">电话订票</div>
+                <div class="md-card__title">
+                    <a href="tel:95105105">95105105</a>
+                </div>
+                <p class="md-card__body">中国铁路客户服务中心电话订票热线。</p>
+            </div>
+            <a class="md-card" href="https://kyfw.12306.cn">
+                <div class="md-card__eyebrow">网络订票</div>
+                <div class="md-card__title">12306</div>
+                <p class="md-card__body">访问铁路 12306 官方网站进行在线购票。</p>
+            </a>
+        </div>
+    </main>
+
+    <footer class="md-footer">
+        <div class="md-footer__inner">
+            <div class="md-time">
+                <a href="https://time.is/Beijing,_China" id="time_is_link" rel="nofollow">北京时间:</a>
+                <span id="Beijing__China_z43d"></span>
+            </div>
+            <span class="md-footer__note">本网页使用 <a href="https://unicode.org">UTF-8</a> 编码</span>
+        </div>
+        <script src="//widget.time.is/t.js"></script>
+        <script>time_is_widget.init({Beijing__China_z43d:{}});</script>
+    </footer>
 </body>
-<footer>
-    <a href="https://time.is/Beijing,_China" id="time_is_link" rel="nofollow">北京时间:</a>
-    <span id="Beijing__China_z43d"></span>
-    <script src="//widget.time.is/t.js"></script>
-    <script>
-        time_is_widget.init({Beijing__China_z43d:{}});
-    </script><p>如果没有显示请检查您与time.is的连接是否正常</p>
-    <p class="unioncode">本网页使用<a href="https://unicode.org">UTF-8</i>编码</p>
-</footer>
+</html>

@@ -1,29 +1,48 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
+<html lang="zh-CN">
+<head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" link="/css/index.css">
-    <title>
-        st-nodejsdev_wiki
-    </title>
-    <header>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="st-nodejsdev 使用文档 — 海兰德小助手指令说明">
+    <link rel="stylesheet" href="/css/index.css">
+    <title>使用文档 — st-nodejsdev</title>
+</head>
+<body>
+    <header class="md-topbar md-topbar--dense">
+        <a href="/index.html" class="md-icon-btn" aria-label="返回首页" title="返回首页">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M19 11H7.83l4.88-4.88a1 1 0 1 0-1.42-1.41l-6.59 6.58a1 1 0 0 0 0 1.42l6.59 6.58a1 1 0 0 0 1.42-1.41L7.83 13H19a1 1 0 0 0 0-2z"/>
+            </svg>
+        </a>
+        <span class="md-topbar__title">使用文档</span>
     </header>
-    <body>
-        <div class="arona">
 
+    <main class="md-container">
+        <section class="md-hero">
+            <h1 class="md-hero__title">使用文档</h1>
+            <p class="md-hero__subtitle">查阅海兰德小助手等产品的指令说明与功能介绍。</p>
+        </section>
+
+        <h2 class="md-section-title">海兰德 wiki</h2>
+        <div class="md-grid">
+            <a class="md-card md-card--accent" href="/wiki/CPSC.html">
+                <div class="md-card__eyebrow">指令</div>
+                <div class="md-card__title">生成车票</div>
+                <p class="md-card__body">使用 <code>/车票生成</code> 指令自定义中国铁路风格的车票。</p>
+            </a>
         </div>
-        <div class="highland">
-            <p>海兰德wiki</p>
-            <a class="CPSC" href="/wiki/CPSC.html">生成车票</a>
+    </main>
+
+    <footer class="md-footer">
+        <div class="md-footer__inner">
+            <div class="md-time">
+                <a href="https://time.is/Beijing,_China" id="time_is_link" rel="nofollow">北京时间:</a>
+                <span id="Beijing__China_z43d"></span>
+            </div>
+            <span class="md-footer__note">本网页使用 <a href="https://unicode.org">UTF-8</a> 编码</span>
         </div>
-    </body>
-    <hr>
-    <footer>
-    <a href="https://time.is/Beijing,_China" id="time_is_link" rel="nofollow">北京时间:</a>
-    <span id="Beijing__China_z43d"></span>
-    <script src="//widget.time.is/t.js"></script>
-    <script>
-        time_is_widget.init({Beijing__China_z43d:{}});
-    </script><p>如果没有显示请检查您与time.is的连接是否正常</p>
-    <p class="unioncode">本网页使用<a href="https://unicode.org">UTF-8</i>编码</p>
+        <script src="//widget.time.is/t.js"></script>
+        <script>time_is_widget.init({Beijing__China_z43d:{}});</script>
+    </footer>
+</body>
 </html>

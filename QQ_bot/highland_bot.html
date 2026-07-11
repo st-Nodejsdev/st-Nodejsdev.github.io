@@ -1,14 +1,61 @@
 <!DOCTYPE html>
-<html>
-    <head>
-    <meta charset="utf-8">
-    <title>海兰德小助手</title>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/index.css">
+    <title>海兰德 — 小助手</title>
 </head>
-    <div class="header">
-    <a href="../index.html">返回首页</a>
-</div>
-	<div class="QQLink">
-		<a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=9Xr1XTkeZ9zGzPRm3XvGg57t_4kRKg5J&jump_from=webapi&authKey=cTjZe7Qc9SZymtzWTonwI98gu5RMTM5lyApVkkV5eVFtacFYuKIxehs+gGjqxzCH"><img border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="海兰德bot交流群" title="海兰德bot交流群"></a>
-		<a target="_blank" href="https://qun.qq.com/qunpro/robot/qunshare?robot_uin=3889001607&robot_appid=102077280&biz_type=0">点击添加机器人至频道/群</a>
-	</div>
+<body>
+    <header class="md-topbar md-topbar--dense">
+        <a href="/index.html" class="md-icon-btn" aria-label="返回首页" title="返回首页">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M19 11H7.83l4.88-4.88a1 1 0 1 0-1.42-1.41l-6.59 6.58a1 1 0 0 0 0 1.42l6.59 6.58a1 1 0 0 0 1.42-1.41L7.83 13H19a1 1 0 0 0 0-2z"/>
+            </svg>
+        </a>
+        <span class="md-topbar__title">海兰德小助手</span>
+    </header>
+
+    <main class="md-container">
+        <section class="md-hero">
+            <h1 class="md-hero__title">海兰德</h1>
+            <p class="md-hero__subtitle">海兰德小助手提供车票生成等指令。通过下方链接加入交流群或将机器人添加至您的频道 / 群。</p>
+        </section>
+
+        <h2 class="md-section-title">接入海兰德</h2>
+        <div class="md-grid">
+            <a class="md-card md-card--accent"
+               target="_blank" rel="noopener noreferrer"
+               href="https://qm.qq.com/cgi-bin/qm/qr?k=9Xr1XTkeZ9zGzPRm3XvGg57t_4kRKg5J&jump_from=webapi&authKey=cTjZe7Qc9SZymtzWTonwI98gu5RMTM5lyApVkkV5eVFtacFYuKIxehs+gGjqxzCH">
+                <div class="md-card__eyebrow">QQ 群</div>
+                <div class="md-card__title">海兰德 bot 交流群</div>
+                <p class="md-card__body">点击加入官方交流群，与开发者和其他用户互动。</p>
+            </a>
+            <a class="md-card"
+               target="_blank" rel="noopener noreferrer"
+               href="https://qun.qq.com/qunpro/robot/qunshare?robot_uin=3889001607&robot_appid=102077280&biz_type=0">
+                <div class="md-card__eyebrow">添加机器人</div>
+                <div class="md-card__title">频道 / 群接入</div>
+                <p class="md-card__body">点击将海兰德添加至您的 QQ 频道或群聊。</p>
+            </a>
+        </div>
+
+        <div class="md-row">
+            <a class="md-btn md-btn--tonal" href="/wiki/CPSC.html">查看指令文档</a>
+            <a class="md-btn md-btn--text" href="/index.html">返回首页</a>
+        </div>
+    </main>
+
+    <footer class="md-footer">
+        <div class="md-footer__inner">
+            <div class="md-time">
+                <a href="https://time.is/Beijing,_China" id="time_is_link" rel="nofollow">北京时间:</a>
+                <span id="Beijing__China_z43d"></span>
+            </div>
+            <span class="md-footer__note">本网页使用 <a href="https://unicode.org">UTF-8</a> 编码</span>
+        </div>
+        <script src="//widget.time.is/t.js"></script>
+        <script>time_is_widget.init({Beijing__China_z43d:{}});</script>
+    </footer>
+</body>
 </html>
