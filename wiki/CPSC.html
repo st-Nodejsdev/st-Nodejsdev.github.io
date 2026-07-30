@@ -29,15 +29,18 @@
 
         <h2 class="md-section-title">指令格式</h2>
         <div class="md-card">
-<pre><code>@海兰德小助手 /车票生成 车次{[发站,到站]发车时间,票价[席别,座位号]}售出站</code></pre>
-            <p class="md-card__body" style="margin:0;">
+<pre><code>@海兰德小助手 /车票生成 车次{[发站,到站]发车时间,票价[席别,座位号]} 售出站</code></pre>
+            <p class="md-card__body" style="margin:0 0 8px;">
                 <strong>食用指南：</strong>推荐你将指令复制下来，将其中内容更改为自身所需的文本。
+            </p>
+            <p class="md-card__body" style="margin:0;">
+                <strong>注意：</strong><code>}</code> 与 <code>售出站</code> 之间必须保留<strong>一个空格</strong>，否则将返回 <code>404-1</code>。发车时间支持 <code>YYYYMMDDhhmm</code>（12位）或 <code>MMDDhhmm</code>（8位，省略年份）。
             </p>
         </div>
 
         <h2 class="md-section-title">指令实例</h2>
         <div class="md-card">
-<pre><code>@海兰德小助手 /车票生成 G1{[北京南,上海虹桥]202101011001,1145.1[商务座,01车01A号]}</code></pre>
+<pre><code>@海兰德小助手 /车票生成 G1{[北京南,上海虹桥]202101011001,1145.1[商务座,01车01A号]} 北京南</code></pre>
         </div>
 
         <h2 class="md-section-title">注意事项</h2>
@@ -47,7 +50,7 @@
                 <li>指令内所有符号务必是<strong>半角符号</strong>。</li>
                 <li>请填写所有参数，目前暂不支持参数选填。</li>
                 <li>车次最多只能写入五个数字和字母。</li>
-                <li>发车时间请完整填写年月日小时分钟，填写格式：<code>20240121148</code>。</li>
+                <li>发车时间请完整填写年月日小时分钟，填写格式：<code>202401211408</code>（12位），或省略年份使用 <code>01211408</code>（8位）。</li>
                 <li>支持的列车级别：<code>K</code> <code>T</code> <code>Z</code> <code>D</code> <code>G</code> <code>Y</code> <code>S</code> <code>C</code> <code>DJ</code> <code>L</code> <code>N</code> <code>A</code>。</li>
                 <li>支持的席别类型：
 <pre style="margin:8px 0 0;"><code>高级动卧 | 混编硬座 | 混编硬卧 | 包厢软座 | 特等软座 | 动卧 | 二人软包 | 一人软包 | 一等卧 | 二等卧 | 混编软座 | 混编软卧 | 优选一等 | 一等座 | 二等座 | 特等座 | 多功能座 | 二等包座 | 棚车 | 硬座 | 软座 | 硬卧 | 软卧 | 包厢硬卧 | 高级软卧 | 一等软座 | 二等软座 | 商务座 | 敞车 | 板车 | 行李车 | 挂票</code></pre>
@@ -57,6 +60,31 @@
             </ol>
         </div>
 
+        <h2 class="md-section-title">已废弃格式（仅展示，不可复制）</h2>
+        <div class="md-card">
+            <p class="md-card__body" style="margin:0 0 8px;">
+                以下为<strong>旧版格式</strong>，<code>}</code> 与 <code>售出站</code> 之间<strong>缺少空格</strong>，使用将返回 <code>404-1</code>。仅作对照展示，<strong>不可复制</strong>，请勿使用。
+            </p>
+            <div id="deprecatedFormat"
+                 style="position:relative; margin:0; padding:12px; border:1px dashed #999; background:repeating-linear-gradient(45deg,#f0f0f0,#f0f0f0 8px,#e6e6e6 8px,#e6e6e6 16px);
+                        -webkit-user-select:none; -ms-user-select:none; user-select:none; color:#888; cursor:not-allowed;"
+                 title="已废弃格式，不可复制"
+                 oncopy="return false;" oncut="return false;" oncontextmenu="return false;" onmousedown="return false;">
+                <span style="display:inline-block; padding:1px 6px; margin-right:8px; background:#888; color:#fff; font-size:11px; font-weight:bold; border-radius:2px;">已废弃 · 仅展示</span>
+                <code style="font-family:Consolas,'Courier New',monospace; text-decoration:line-through; word-break:break-all; color:#888;">@海兰德小助手 /车票生成 车次{[发站,到站]发车时间,票价[席别,座位号]}售出站</code>
+            </div>
+            <p class="md-card__body" style="margin:8px 0 0; color:#666;">
+                正确格式应为：<code>@海兰德小助手 /车票生成 车次{[发站,到站]发车时间,票价[席别,座位号]} 售出站</code>（注意 <code>}</code> 后的空格）。
+            </p>
+        </div>
+
+        <h2 class="md-section-title">在线生成工具</h2>
+        <div class="md-card">
+            <p class="md-card__body" style="margin:0 0 12px;">
+                不想手敲指令？使用<strong>车票指令生成器</strong>，填写表单（年/月/日/时/分 分项填写）即可自动生成规范的 <code>/车票生成</code> 指令，支持一键复制。
+            </p>
+            <a class="md-btn md-btn--text" data-md-ripple href="/wiki/TicketGenerator.html">打开车票指令生成器 →</a>
+        </div>
         <div class="md-row">
             <a class="md-btn md-btn--text" data-md-ripple href="/wiki/index.html">返回文档</a>
             <a class="md-btn md-btn--text" data-md-ripple href="/index.html">回到首页</a>

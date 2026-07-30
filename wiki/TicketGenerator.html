@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="车票指令生成器 — 老式 Windows 风格，填写表单即可生成 /车票生成 指令">
+    <title>车票指令生成器 — 海兰德 wiki</title>
+    <style>
+        /* ===== 老版本 Windows 经典风格 ===== */
+        :root {
+            --win-face:      #c0c0c0; /* 窗口表面灰 */
+            --win-shadow:    #808080; /* 阴影灰 */
+            --win-highlight: #ffffff; /* 高光白 */
+            --win-dark:      #000080; /* 标题栏蓝 */
+            --win-text:      #000000;
+            --win-btn-face:  #c0c0c0;
+            --win-frame-d:   #808080;
+            --win-frame-dd:  #000000;
+            --win-frame-l:   #ffffff;
+            --win-frame-ll:  #dfdfdf;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: #008080; /* 经典 Win 桌面青绿 */
+            font-family: "Tahoma", "MS Sans Serif", "Segoe UI", "Microsoft YaHei", sans-serif;
+            font-size: 12px;
+            color: var(--win-text);
+            overflow: auto;
+        }
+
+        body {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 24px 12px;
+        }
+
+        /* ===== 窗口 ===== */
+        .win {
+            width: 100%;
+            max-width: 560px;
+            background: var(--win-face);
+            border: 2px solid;
+            border-color: var(--win-frame-l) var(--win-frame-dd) var(--win-frame-dd) var(--win-frame-l);
+            box-shadow: 2px 2px 0 #000;
+            margin-bottom: 24px;
+        }
+
+        .win__titlebar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 22px;
+            padding: 0 2px 0 4px;
+            background: var(--win-dark);
+            color: #fff;
+            font-weight: bold;
+            user-select: none;
+        }
+        .win__title { display: flex; align-items: center; gap: 6px; }
+        .win__icon {
+            width: 14px; height: 14px;
+            background:
+                linear-gradient(45deg, #fff 50%, transparent 50) 0 0 / 7px 7px no-repeat,
+                linear-gradient(-45deg, #fff 50%, transparent 50) 100% 0 / 7px 7px no-repeat;
+            opacity: .9;
+        }
+        .win__buttons { display: flex; gap: 2px; }
+        .win-btn-min, .win-btn-close {
+            width: 18px; height: 16px;
+            background: var(--win-btn-face);
+            border: 1px solid;
+            border-color: var(--win-frame-l) var(--win-frame-dd) var(--win-frame-dd) var(--win-frame-l);
+            color: #000;
+            font-family: "Marlett", "Tahoma", sans-serif;
+            font-size: 10px;
+            font-weight: bold;
+            line-height: 1;
+            display: flex; align-items: center; justify-content: center;
+            cursor: default;
+            padding: 0;
+        }
+        .win-btn-close:active, .win-btn-min:active {
+            border-color: var(--win-frame-dd) var(--win-frame-l) var(--win-frame-l) var(--win-frame-dd);
+        }
+
+        .win__body { padding: 12px; }
+
+        /* ===== 字段 ===== */
+        fieldset {
+            border: 1px solid;
+            border-color: var(--win-frame-d) #fff #fff var(--win-frame-d);
+            margin: 0 0 12px 0;
+            padding: 12px 10px 10px;
+            background: var(--win-face);
+        }
+        legend {
+            padding: 0 4px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .field:last-child { margin-bottom: 0; }
+        .field label {
+            width: 78px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        .field input,
+        .field select {
+            flex: 1;
+            min-width: 0;
+            height: 21px;
+            border: 1px solid;
+            border-color: var(--win-frame-dd) var(--win-frame-l) var(--win-frame-l) var(--win-frame-dd);
+            background: #fff;
+            font-family: inherit;
+            font-size: 12px;
+            padding: 2px 4px;
+            outline: none;
+        }
+        .field input:focus,
+        .field select:focus {
+            border-color: var(--win-dark);
+        }
+        .field select { padding: 1px 2px; }
+
+        .field-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .field-row .field { flex: 1 1 0; min-width: 0; }
+        .field-row .field label { width: auto; min-width: 48px; }
+
+        .hint {
+            color: #404040;
+            font-size: 11px;
+            margin: 2px 0 8px 86px;
+        }
+
+        /* 日期时间拆分输入 */
+        .datetime { align-items: center; }
+        .datetime > label { flex: 0 0 78px; }
+        .dt-group {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            gap: 3px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+        .dt-group input {
+            width: 38px;
+            min-width: 0;
+            height: 21px;
+            text-align: center;
+            border: 1px solid;
+            border-color: var(--win-frame-dd) var(--win-frame-l) var(--win-frame-l) var(--win-frame-dd);
+            background: #fff;
+            font-family: inherit;
+            font-size: 12px;
+            padding: 2px 2px;
+            outline: none;
+        }
+        .dt-group input#year { width: 46px; }
+        .dt-group input:focus { border-color: var(--win-dark); }
+
+        /* 车次拆分输入：字母下拉 + 数字 */
+        .train-group {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            gap: 4px;
+            min-width: 0;
+        }
+        .train-group select {
+            width: 52px;
+            flex: 0 0 auto;
+            height: 21px;
+            padding: 1px 2px;
+            border: 1px solid;
+            border-color: var(--win-frame-dd) var(--win-frame-l) var(--win-frame-l) var(--win-frame-dd);
+            background: #fff;
+            font-family: inherit;
+            font-size: 12px;
+            outline: none;
+        }
+        .train-group select:focus { border-color: var(--win-dark); }
+        .train-group input {
+            flex: 1;
+            min-width: 0;
+            height: 21px;
+            border: 1px solid;
+            border-color: var(--win-frame-dd) var(--win-frame-l) var(--win-frame-l) var(--win-frame-dd);
+            background: #fff;
+            font-family: inherit;
+            font-size: 12px;
+            padding: 2px 4px;
+            outline: none;
+        }
+        .train-group input:focus { border-color: var(--win-dark); }
+
+        /* ===== 按钮 ===== */
+        .btn {
+            min-width: 75px;
+            height: 23px;
+            padding: 0 10px;
+            background: var(--win-btn-face);
+            border: 2px solid;
+            border-color: var(--win-frame-l) var(--win-frame-dd) var(--win-frame-dd) var(--win-frame-l);
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            color: #000;
+            box-shadow:
+                inset -1px -1px 0 var(--win-frame-d),
+                inset 1px 1px 0 var(--win-frame-ll);
+        }
+        .btn:active,
+        .btn.is-pressed {
+            border-color: var(--win-frame-dd) var(--win-frame-l) var(--win-frame-l) var(--win-frame-dd);
+            box-shadow:
+                inset 1px 1px 0 var(--win-frame-d),
+                inset -1px -1px 0 var(--win-frame-ll);
+            padding: 1px 9px 0 11px;
+        }
+        .btn:focus { outline: 1px dotted #000; outline-offset: -4px; }
+
+        /* ===== 输出区 ===== */
+        .output-wrap {
+            position: relative;
+            margin-bottom: 8px;
+        }
+        .output {
+            width: 100%;
+            height: 70px;
+            resize: vertical;
+            border: 1px solid;
+            border-color: var(--win-frame-dd) var(--win-frame-l) var(--win-frame-l) var(--win-frame-dd);
+            background: #fff;
+            font-family: "Consolas", "Courier New", monospace;
+            font-size: 12px;
+            padding: 4px;
+            outline: none;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        /* ===== 状态栏 ===== */
+        .statusbar {
+            display: flex;
+            gap: 2px;
+            padding: 2px;
+            margin-top: 4px;
+        }
+        .statusbar__panel {
+            flex: 1;
+            border: 1px solid;
+            border-color: var(--win-frame-d) #fff #fff var(--win-frame-d);
+            padding: 2px 6px;
+            min-height: 18px;
+            color: #000;
+        }
+        .statusbar__panel--small { flex: 0 0 120px; }
+
+        /* ===== 顶部返回链接 ===== */
+        .toplinks {
+            position: absolute;
+            top: 6px; left: 6px;
+            z-index: 5;
+        }
+        .toplinks a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 12px;
+            background: rgba(0,0,0,.25);
+            padding: 2px 8px;
+            border: 1px solid;
+            border-color: #fff #404040 #404040 #fff;
+        }
+        .toplinks a:hover { background: rgba(0,0,0,.4); }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 480px) {
+            .field { flex-wrap: wrap; }
+            .field label { width: 100%; text-align: left; }
+            .hint { margin-left: 0; }
+            .field-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toplinks">
+        <a href="CPSC.html">◄ 返回说明</a>
+    </div>
+
+    <div class="win" role="dialog" aria-labelledby="winTitle">
+        <div class="win__titlebar">
+            <span class="win__title">
+                <span class="win__icon" aria-hidden="true"></span>
+                <span id="winTitle">车票指令生成器</span>
+            </span>
+            <span class="win__buttons">
+                <button class="win-btn-min" type="button" title="最小化" aria-label="最小化" onclick="this.classList.toggle('is-pressed')">_</button>
+                <button class="win-btn-close" type="button" title="关闭" aria-label="关闭" onclick="window.location.href='CPSC.html'">×</button>
+            </span>
+        </div>
+
+        <div class="win__body">
+            <form id="form" autocomplete="off" onsubmit="return false">
+                <fieldset>
+                    <legend>列车信息</legend>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="trainPrefix">车次:</label>
+                            <span class="train-group">
+                                <select id="trainPrefix" onchange="onPrefixChange(); generate()" onfocus="expandPrefix()" onblur="collapsePrefix()">
+                                    <option value="">— 无 —</option>
+                                    <option value="G">G 高速</option>
+                                    <option value="D">D 动车</option>
+                                    <option value="C">C 城际</option>
+                                    <option value="S">S 市郊</option>
+                                    <option value="Z">Z 直达</option>
+                                    <option value="T">T 特快</option>
+                                    <option value="K">K 快速</option>
+                                    <option value="L">L 临时</option>
+                                    <option value="Y">Y 旅游</option>
+                                    <option value="X">X 行包</option>
+                                    <option value="DJ">DJ 动检</option>
+                                </select>
+                                <input type="text" id="trainNo" inputmode="numeric" maxlength="5" placeholder="1" oninput="generate()">
+                            </span>
+                        </div>
+                        <div class="field">
+                            <label for="sellStation">售出站:</label>
+                            <input type="text" id="sellStation" placeholder="北京南" oninput="generate()">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>车站 &amp; 时间</legend>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="fromStation">发站:</label>
+                            <input type="text" id="fromStation" placeholder="北京南" oninput="generate()">
+                        </div>
+                        <div class="field">
+                            <label for="toStation">到站:</label>
+                            <input type="text" id="toStation" placeholder="上海虹桥" oninput="generate()">
+                        </div>
+                    </div>
+                    <div class="field datetime">
+                        <label>发车时间:</label>
+                        <span class="dt-group">
+                            <input type="text" id="year"   inputmode="numeric" maxlength="4" placeholder="2021" aria-label="年" oninput="generate()"> 年
+                            <input type="text" id="month"  inputmode="numeric" maxlength="2" placeholder="01"   aria-label="月" oninput="generate()"> 月
+                            <input type="text" id="day"    inputmode="numeric" maxlength="2" placeholder="01"   aria-label="日" oninput="generate()"> 日
+                            <input type="text" id="hour"   inputmode="numeric" maxlength="2" placeholder="10"   aria-label="时" oninput="generate()"> 时
+                            <input type="text" id="minute" inputmode="numeric" maxlength="2" placeholder="01"   aria-label="分" oninput="generate()"> 分
+                        </span>
+                    </div>
+                    <div class="hint">格式：YYYYMMDDhhmm（12位），年/月/日/时/分 均为必填。</div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>票价 &amp; 席别</legend>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="price">票价:</label>
+                            <input type="text" id="price" placeholder="1145.1" oninput="generate()">
+                        </div>
+                        <div class="field">
+                            <label for="carNo">车厢号:</label>
+                            <input type="text" id="carNo" inputmode="numeric" placeholder="01" oninput="generate()">
+                        </div>
+                        <div class="field">
+                            <label for="seatNo">座位号:</label>
+                            <input type="text" id="seatNo" placeholder="001 / 01A" oninput="generate()">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="seatClass">席别:</label>
+                        <select id="seatClass" onchange="generate()">
+                            <option value="">— 请选择 —</option>
+                            <option>商务座</option>
+                            <option>特等座</option>
+                            <option>一等座</option>
+                            <option>二等座</option>
+                            <option>优选一等</option>
+                            <option>多功能座</option>
+                            <option>二等包座</option>
+                            <option>软座</option>
+                            <option>硬座</option>
+                            <option>特等软座</option>
+                            <option>一等软座</option>
+                            <option>二等软座</option>
+                            <option>包厢软座</option>
+                            <option>一等卧</option>
+                            <option>二等卧</option>
+                            <option>软卧</option>
+                            <option>硬卧</option>
+                            <option>高级软卧</option>
+                            <option>包厢硬卧</option>
+                            <option>动卧</option>
+                            <option>高级动卧</option>
+                            <option>二人软包</option>
+                            <option>一人软包</option>
+                            <option>混编硬座</option>
+                            <option>混编硬卧</option>
+                            <option>混编软座</option>
+                            <option>混编软卧</option>
+                            <option>棚车</option>
+                            <option>敞车</option>
+                            <option>板车</option>
+                            <option>行李车</option>
+                            <option>挂票</option>
+                        </select>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>生成结果</legend>
+                    <div class="output-wrap">
+                        <textarea class="output" id="output" readonly aria-label="生成结果" onclick="this.select()"></textarea>
+                    </div>
+
+                    <div class="actions">
+                        <button class="btn" type="button" onclick="copyOutput()">复制</button>
+                        <button class="btn" type="button" onclick="clearAll()">清空</button>
+                        <button class="btn" type="button" onclick="loadExample()">示例</button>
+                    </div>
+                </fieldset>
+
+                <div class="statusbar">
+                    <div class="statusbar__panel" id="status">就绪。</div>
+                    <div class="statusbar__panel statusbar__panel--small" id="statusCount">字符: 0</div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            "use strict";
+
+            var PREFIX = "/车票生成 ";
+            var fields = {
+                trainPrefix: document.getElementById("trainPrefix"),
+                trainNo:     document.getElementById("trainNo"),
+                fromStation: document.getElementById("fromStation"),
+                toStation:   document.getElementById("toStation"),
+                year:        document.getElementById("year"),
+                month:       document.getElementById("month"),
+                day:         document.getElementById("day"),
+                hour:        document.getElementById("hour"),
+                minute:      document.getElementById("minute"),
+                price:       document.getElementById("price"),
+                seatClass:   document.getElementById("seatClass"),
+                carNo:       document.getElementById("carNo"),
+                seatNo:      document.getElementById("seatNo"),
+                sellStation: document.getElementById("sellStation")
+            };
+            var output    = document.getElementById("output");
+            var status    = document.getElementById("status");
+            var statusCnt = document.getElementById("statusCount");
+
+            function val(k) { return (fields[k].value || "").trim(); }
+
+            function setStatus(msg) { status.textContent = msg; }
+
+            // 取当前北京时间 (UTC+8) 各分量，返回 {y,mo,d,h,mi}
+            function nowBeijingParts() {
+                var fmt = new Intl.DateTimeFormat("zh-CN", {
+                    timeZone: "Asia/Shanghai",
+                    year: "numeric", month: "2-digit", day: "2-digit",
+                    hour: "2-digit", minute: "2-digit", hour12: false
+                });
+                var parts = fmt.formatToParts(new Date());
+                var o = {};
+                parts.forEach(function (p) {
+                    if (p.type === "year")   o.y  = p.value;
+                    if (p.type === "month")  o.mo = p.value;
+                    if (p.type === "day")    o.d  = p.value;
+                    if (p.type === "hour")   o.h  = p.value;
+                    if (p.type === "minute") o.mi = p.value;
+                });
+                // hour12:false 在部分环境会输出 "24"，规范为 "00"
+                if (o.h === "24") o.h = "00";
+                return o;
+            }
+
+            // 初始化：发车时间默认填当前北京时间
+            function fillNowTime() {
+                var n = nowBeijingParts();
+                fields.year.value   = n.y;
+                fields.month.value  = n.mo;
+                fields.day.value    = n.d;
+                fields.hour.value   = n.h;
+                fields.minute.value = n.mi;
+            }
+
+            // 补足两位：1 -> 01
+            function pad2(s) { return ("0" + s).slice(-2); }
+
+            // 根据所选字母前缀长度，动态调整数字部分的 maxlength（保证字母+数字≤5）
+            window.onPrefixChange = function () {
+                var prefix = val("trainPrefix");
+                var maxDigits = 5 - prefix.length;   // "" →5, 单字母→4, "DJ"→3
+                fields.trainNo.setAttribute("maxlength", maxDigits);
+                // 若当前数字超出新上限则截断
+                if (fields.trainNo.value.length > maxDigits) {
+                    fields.trainNo.value = fields.trainNo.value.slice(0, maxDigits);
+                }
+            };
+
+            // 车次字母下拉：展开显示"字母 汉语"，收起只显示字母
+            // 每个选项的完整文本存在 data-label，data-short 存纯字母（无字母选项存"— 无 —"）
+            function refreshPrefixOptions(showFull) {
+                var sel = fields.trainPrefix;
+                for (var i = 0; i < sel.options.length; i++) {
+                    var opt = sel.options[i];
+                    opt.textContent = showFull ? opt.getAttribute("data-label")
+                                               : opt.getAttribute("data-short");
+                }
+            }
+            // 初始化：把 option 文本写入 data-* 属性
+            (function initPrefixData() {
+                var sel = fields.trainPrefix;
+                for (var i = 0; i < sel.options.length; i++) {
+                    var opt = sel.options[i];
+                    var full = opt.textContent;            // 如 "G 高速"
+                    opt.setAttribute("data-label", full);
+                    opt.setAttribute("data-short", opt.value === "" ? "—" : opt.value);
+                }
+            })();
+            window.expandPrefix  = function () { refreshPrefixOptions(true);  };
+            window.collapsePrefix = function () { refreshPrefixOptions(false); };
+            // 页面加载时默认收起（只显示字母）
+            refreshPrefixOptions(false);
+
+            // 拼接发车时间：YYYYMMDDhhmm（12位），年必填
+            function buildDepTime() {
+                var y = val("year"), mo = val("month"), d = val("day"),
+                    h = val("hour"), mi = val("minute");
+                if (!/^\d{4}$/.test(y))  return null;   // 年必填，4 位
+                if (!/^\d{1,2}$/.test(mo)) return null;
+                if (!/^\d{1,2}$/.test(d))  return null;
+                if (!/^\d{1,2}$/.test(h))  return null;
+                if (!/^\d{1,2}$/.test(mi)) return null;
+                return y + pad2(mo) + pad2(d) + pad2(h) + pad2(mi);  // YYYYMMDDhhmm
+            }
+
+            window.generate = function () {
+                var trainPrefix = val("trainPrefix");
+                var trainNoNum  = val("trainNo");
+                var fromStation = val("fromStation");
+                var toStation   = val("toStation");
+                var price       = val("price");
+                var seatClass   = val("seatClass");
+                var carNo       = val("carNo");
+                var seatNo      = val("seatNo");
+                var sellStation = val("sellStation");
+                var depTime     = buildDepTime();
+
+                // 车次 = 字母前缀 + 数字（"无字母"时仅数字）
+                var trainNo = trainPrefix + trainNoNum;
+
+                // 任一为空则不输出完整指令（数字部分必填）
+                if (!trainNoNum || !fromStation || !toStation ||
+                    !price || !seatClass || !carNo || !seatNo || !sellStation) {
+                    output.value = "";
+                    setStatus("请填写全部字段。");
+                    statusCnt.textContent = "字符: 0";
+                    return;
+                }
+
+                if (depTime === null) {
+                    output.value = "";
+                    setStatus("错误：发车时间需填写 年(4位)/月/日/时/分。");
+                    statusCnt.textContent = "字符: 0";
+                    return;
+                }
+
+                // 数字部分必须为纯数字
+                if (!/^\d+$/.test(trainNoNum)) {
+                    output.value = "";
+                    setStatus("错误：车次数字部分只能填写数字。");
+                    statusCnt.textContent = "字符: 0";
+                    return;
+                }
+
+                // 车次（字母+数字）最多 5 个字符
+                if (trainNo.length > 5) {
+                    output.value = "";
+                    setStatus("错误：车次字母+数字合计最多 5 个字符（当前 " + trainNo.length + "）。");
+                    statusCnt.textContent = "字符: 0";
+                    return;
+                }
+
+                // 按机器人实际格式拼接：车次{[发站,到站]发车时间,票价[席别,座位号]} 售出站
+                // 注意 } 与 售出站 之间必须有一个空格，否则返回 404-1
+                // 座位号由"车厢号+车"+"座位号+号"自动拼接
+                var seat = carNo + "车" + seatNo + "号";
+                var cmd =
+                    trainNo + "{" +
+                    "[" + fromStation + "," + toStation + "]" +
+                    depTime + "," + price +
+                    "[" + seatClass + "," + seat + "]" +
+                    "} " + sellStation;
+
+                output.value = PREFIX + cmd;
+                setStatus("已生成。点击结果框或“复制”按钮。");
+                statusCnt.textContent = "字符: " + output.value.length;
+            };
+
+            window.copyOutput = function () {
+                if (!output.value) {
+                    setStatus("无可复制内容。");
+                    return;
+                }
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(output.value).then(
+                        function () { setStatus("已复制到剪贴板。"); },
+                        function () { fallbackCopy(); }
+                    );
+                } else {
+                    fallbackCopy();
+                }
+            };
+
+            function fallbackCopy() {
+                output.removeAttribute("readonly");
+                output.select();
+                try {
+                    document.execCommand("copy");
+                    setStatus("已复制到剪贴板。");
+                } catch (e) {
+                    setStatus("复制失败，请手动选择文本。");
+                }
+                output.setAttribute("readonly", "");
+                window.getSelection().removeAllRanges();
+            }
+
+            window.clearAll = function () {
+                Object.keys(fields).forEach(function (k) { fields[k].value = ""; });
+                output.value = "";
+                setStatus("已清空。");
+                statusCnt.textContent = "字符: 0";
+            };
+
+            window.loadExample = function () {
+                fields.trainPrefix.value  = "K";
+                onPrefixChange();               // 同步数字框上限
+                fields.trainNo.value      = "7254";
+                fields.fromStation.value = "北京";
+                fields.toStation.value   = "上海";
+                fields.year.value        = "2024";
+                fields.month.value       = "03";
+                fields.day.value         = "21";
+                fields.hour.value        = "12";
+                fields.minute.value      = "30";
+                fields.price.value       = "55.0";
+                fields.seatClass.value   = "硬座";
+                fields.carNo.value       = "01";
+                fields.seatNo.value      = "001";
+                fields.sellStation.value = "北京";
+                window.generate();
+            };
+
+            // 初始化：发车时间默认填当前北京时间，并设置车次数字框上限
+            fillNowTime();
+            onPrefixChange();
+        })();
+    </script>
+</body>
+</html>
