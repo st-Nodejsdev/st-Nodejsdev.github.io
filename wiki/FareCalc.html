@@ -274,6 +274,14 @@
         }
         .detail-table td.name { text-align: left; }
 
+        /* 团体票表 */
+        .group-table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 13px; }
+        .group-table th, .group-table td { border: 1px solid var(--win-frame-s); padding: 2px 4px; text-align: center; }
+        .group-table th { background: var(--win-bg-ctrl); }
+        .group-table select, .group-table input { width: 100%; box-sizing: border-box; font-size: 12px; }
+        .group-table .del-btn { width: auto; padding: 1px 6px; }
+        #groupTotal { color: var(--win-accent); font-size: 16px; }
+
         .output-wrap { position: relative; margin-bottom: 8px; }
         .output {
             width: 100%;
@@ -437,6 +445,13 @@
                     </div>
                     <div class="hint" id="convSeatHint">倍率相对硬座基价（硬座=1.0）。选"自定义"或无费率项时手动输入。</div>
 
+                    <div class="field hidden" id="convMinKmField">
+                        <label for="convMinKm">客票起码里程:</label>
+                        <input type="text" id="convMinKm" inputmode="numeric" placeholder="20（默认）" oninput="calc()">
+                        <span class="unit">km</span>
+                    </div>
+                    <div class="hint hidden" id="convMinKmHint">自定义/无费率席别时可覆盖客票起码里程（默认 20 km）。留空则用默认值。</div>
+
                     <div class="field-row">
                         <div class="field">
                             <label for="convClass">列车等级:</label>
@@ -526,10 +541,10 @@
                     <div class="field">
                         <label for="discount">优待类型:</label>
                         <select id="discount" onchange="calc()">
-                            <option value="NONE">全价</option>
+                            <option value="NONE">成人票</option>
                             <option value="CHILD">儿童票</option>
                             <option value="STUDENT">学生票</option>
-                            <option value="VETERAN">残疾军人票</option>
+                            <option value="VETERAN">优待票</option>
                         </select>
                     </div>
                     <div class="hint" id="discountHint">普速与动车组优待规则不同，自动按列车类型套用。</div>
@@ -564,6 +579,38 @@
                         <input type="text" id="specialParam" inputmode="decimal" placeholder="见下方说明" oninput="onSpecialParamInput(); calc()">
                     </div>
                     <div class="hint" id="specialHint">选择区段后自动填入参数。参数含义：青藏=每km加收系数基准；广深=总上浮率（默认2.25）；京九/自定义=总上浮率。</div>
+
+                    <div class="field">
+                        <label for="finalDiscount">票价折扣:</label>
+                        <input type="text" id="finalDiscount" inputmode="decimal" placeholder="10（不打折）" oninput="calc()">
+                        <span class="unit">折</span>
+                    </div>
+                    <div class="hint">市场化运行线路的执行折扣，填折数（1～9.5，支持 8.5/1.2/1.4 等任意值）。留空或填 10 = 不打折。本项在全部计算完成后再打折。</div>
+                </fieldset>
+
+                <!-- ===== 团体票（可选） ===== -->
+                <fieldset id="fsGroup">
+                    <legend>团体票（可选）</legend>
+                    <div class="check-row">
+                        <label><input type="checkbox" id="groupEnable" onchange="onGroupToggle(); calc()"> 启用团体票计算</label>
+                    </div>
+                    <div class="hint">同一时间、同一车次、同一到站：满 20 张免 1 张，每增加 10 张额外免 1 张。减免按各行中<strong>最低单张票价</strong>席别计算。</div>
+                    <div id="groupBody" class="hidden">
+                        <table class="group-table" id="groupTable">
+                            <thead>
+                                <tr><th>席别</th><th>倍率</th><th>张数</th><th></th></tr>
+                            </thead>
+                            <tbody id="groupRows"></tbody>
+                        </table>
+                        <div class="actions">
+                            <button class="btn" type="button" onclick="addGroupRow()">+ 添加席别行</button>
+                        </div>
+                        <div class="field">
+                            <label>团体总价：</label>
+                            <strong id="groupTotal">—</strong>
+                        </div>
+                        <div class="hint" id="groupDetail"></div>
+                    </div>
                 </fieldset>
 
                 <!-- ===== 计算结果 ===== -->
@@ -667,10 +714,14 @@
             distance: $("distance"),
             fsConv: $("fsConv"),
             fsEmu: $("fsEmu"),
+            fsGroup: $("fsGroup"),
             convSeat: $("convSeat"),
             convRate: $("convRate"),
             convRateUnit: $("convRateUnit"),
             convSeatHint: $("convSeatHint"),
+            convMinKmField: $("convMinKmField"),
+            convMinKmHint: $("convMinKmHint"),
+            convMinKm: $("convMinKm"),
             convClass: $("convClass"),
             convAC: $("convAC"),
             convOverrail: $("convOverrail"),
@@ -682,10 +733,16 @@
             discountHint: $("discountHint"),
             noSeat: $("noSeat"),
             insurance: $("insurance"),
+            finalDiscount: $("finalDiscount"),
             alphaFloat: $("alphaFloat"),
             specialRoute: $("specialRoute"),
             specialParam: $("specialParam"),
             specialHint: $("specialHint"),
+            groupEnable: $("groupEnable"),
+            groupBody: $("groupBody"),
+            groupRows: $("groupRows"),
+            groupTotal: $("groupTotal"),
+            groupDetail: $("groupDetail"),
             priceLabel: $("priceLabel"),
             priceValue: $("priceValue"),
             output: $("output"),
@@ -818,6 +875,12 @@
             var isEmu = els.trainType.value === "emu";
             els.fsConv.classList.toggle("hidden", isEmu);
             els.fsEmu.classList.toggle("hidden", !isEmu);
+            // 团体票仅普速支持：动车组时禁用并隐藏
+            if (isEmu) {
+                els.fsGroup.classList.add("hidden");
+            } else {
+                els.fsGroup.classList.remove("hidden");
+            }
             updateDiscountHint();
         };
 
@@ -829,6 +892,7 @@
             }
             // 无费率提示
             var code = els.convSeat.value;
+            var isCustom = (rate === ""); // 无费率或自定义
             if (rate === "" && code !== "CUSTOM") {
                 els.convSeatHint.textContent = "该席别无官方费率数据，请在右侧手动输入倍率。";
             } else if (code === "CUSTOM") {
@@ -836,6 +900,9 @@
             } else {
                 els.convSeatHint.textContent = "倍率相对硬座基价（硬座=1.0）。选\u201c自定义\u201d或无费率项时手动输入。";
             }
+            // 起码里程输入框：仅自定义/无费率席别显示
+            els.convMinKmField.classList.toggle("hidden", !isCustom);
+            els.convMinKmHint.classList.toggle("hidden", !isCustom);
         };
 
         window.onEmuSeatChange = function () {
@@ -852,17 +919,17 @@
             var txt = "";
             if (!isEmu) {
                 switch (d) {
-                    case "NONE": txt = "全价。"; break;
+                    case "NONE": txt = "成人票（全价）。"; break;
                     case "CHILD": txt = "普速儿童：客票/加快/空调半价，卧铺全价。"; break;
                     case "STUDENT": txt = "普速学生：硬席相关半价（客票+加快+空调），硬卧用差额法。"; break;
-                    case "VETERAN": txt = "普速残军：客票+全部附加票（含卧铺）均半价。"; break;
+                    case "VETERAN": txt = "普速优待：客票+加快+空调+卧铺均按公布票价 50%。"; break;
                 }
             } else {
                 switch (d) {
-                    case "NONE": txt = "全价。"; break;
+                    case "NONE": txt = "成人票（全价）。"; break;
                     case "CHILD": txt = "动车儿童：二等/一等×50%，特等/商务×80%，卧铺×70%。"; break;
                     case "STUDENT": txt = "动车学生（2025新规）：执行价×75%，下限公布价×40%。"; break;
-                    case "VETERAN": txt = "动车残军：公布价×50%。"; break;
+                    case "VETERAN": txt = "动车优待：全价执行价×50%；执行价≥公布价40%时下限为公布价40%，低于则按执行价。"; break;
                 }
             }
             els.discountHint.textContent = txt;
@@ -924,9 +991,16 @@
             // 用户明确选择卧铺代号时按卧铺处理
 
             // 起码里程判定
-            var L_seat = Math.max(Lb, MIN_KM.seat);
+            // 客票起码里程：自定义/无费率席别可覆盖
+            var minSeat = MIN_KM.seat;
+            var opt = els.convSeat.options[els.convSeat.selectedIndex];
+            if (opt && opt.getAttribute("data-rate") === "") {
+                var customMin = parseInt(val(els.convMinKm), 10);
+                if (!isNaN(customMin) && customMin > 0) minSeat = customMin;
+            }
+            var L_seat = Math.max(Lb, minSeat);
             var Ladj_seat = decayDistance(L_seat);
-            log.push("客票起码里程 " + MIN_KM.seat + " km → 客票计价里程 " + Ladj_seat.toFixed(2));
+            log.push("客票起码里程 " + minSeat + " km → 客票计价里程 " + Ladj_seat.toFixed(2));
 
             // 客票（硬座基价）
             var P_seat_raw = R_BASE * Ladj_seat; // 客票恒按硬座基价（倍率1.0）
@@ -1015,6 +1089,167 @@
             return 1.00;
         }
 
+        /* ============ 团体票 ============ */
+        // 团体票行 ID 计数器
+        var groupRowId = 0;
+
+        // 单人票价计算（不操作主显示）：保存当前席别/倍率，临时切换后调用 calcConventional，再恢复
+        function calcSinglePrice(seatCode, rate, L) {
+            var savedSeat = els.convSeat.value;
+            var savedRate = els.convRate.value;
+            els.convSeat.value = seatCode;
+            els.convRate.value = rate;
+            var r = calcConventional(L);
+            els.convSeat.value = savedSeat;
+            els.convRate.value = savedRate;
+            if (r.error) return { error: r.error };
+            // 合计各项 = 单人票价（取整后各项之和）
+            var total = 0;
+            r.items.forEach(function (it) { total += it.half; });
+            return { price: total, items: r.items };
+        }
+
+        // 添加一行
+        window.addGroupRow = function (seatCode, rate, count) {
+            var rid = ++groupRowId;
+            var tr = document.createElement("tr");
+            tr.id = "grpRow" + rid;
+            // 席别下拉（从 convSeat 克隆选项）
+            var sel = document.createElement("select");
+            sel.className = "grp-seat";
+            sel.onchange = function () { onGroupRowChange(tr); calc(); };
+            var opts = els.convSeat.options;
+            for (var i = 0; i < opts.length; i++) {
+                sel.appendChild(opts[i].cloneNode(true));
+            }
+            sel.value = seatCode || "YZ";
+            // 倍率
+            var rateInput = document.createElement("input");
+            rateInput.type = "text";
+            rateInput.inputMode = "decimal";
+            rateInput.className = "grp-rate";
+            rateInput.value = rate || (sel.options[sel.selectedIndex].getAttribute("data-rate") || "1.00");
+            rateInput.oninput = function () { calc(); };
+            // 张数
+            var countInput = document.createElement("input");
+            countInput.type = "number";
+            countInput.inputMode = "numeric";
+            countInput.className = "grp-count";
+            countInput.min = "0";
+            countInput.value = count || 1;
+            countInput.oninput = function () { calc(); };
+            // 删除按钮
+            var delBtn = document.createElement("button");
+            delBtn.type = "button";
+            delBtn.className = "btn del-btn";
+            delBtn.textContent = "×";
+            delBtn.onclick = function () { tr.remove(); calc(); };
+
+            var td1 = document.createElement("td"); td1.appendChild(sel);
+            var td2 = document.createElement("td"); td2.appendChild(rateInput);
+            var td3 = document.createElement("td"); td3.appendChild(countInput);
+            var td4 = document.createElement("td"); td4.appendChild(delBtn);
+            tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tr.appendChild(td4);
+            els.groupRows.appendChild(tr);
+            return tr;
+        };
+
+        // 席别切换时同步倍率（若有官方费率）
+        function onGroupRowChange(tr) {
+            var sel = tr.querySelector(".grp-seat");
+            var rateInput = tr.querySelector(".grp-rate");
+            var rate = sel.options[sel.selectedIndex].getAttribute("data-rate");
+            if (rate !== null && rate !== "") {
+                rateInput.value = rate;
+            }
+        }
+
+        window.onGroupToggle = function () {
+            var on = els.groupEnable.checked;
+            els.groupBody.classList.toggle("hidden", !on);
+            if (on && els.groupRows.children.length === 0) {
+                addGroupRow(); // 默认一行
+            }
+        };
+
+        // 团体票核心计算
+        function calcGroup(L, discountType) {
+            if (!els.groupEnable.checked || els.trainType.value === "emu") {
+                els.groupTotal.textContent = "—";
+                els.groupDetail.textContent = "";
+                return;
+            }
+            var rows = els.groupRows.children;
+            if (rows.length === 0) {
+                els.groupTotal.textContent = "—";
+                els.groupDetail.textContent = "请添加至少一行席别。";
+                return;
+            }
+
+            var entries = []; // {name, code, rate, count, unitPrice}
+            var totalTickets = 0;
+            var errMsg = "";
+            for (var i = 0; i < rows.length; i++) {
+                var sel = rows[i].querySelector(".grp-seat");
+                var rateInput = rows[i].querySelector(".grp-rate");
+                var countInput = rows[i].querySelector(".grp-count");
+                var code = sel.value;
+                var name = sel.options[sel.selectedIndex].text;
+                var rate = parseFloat((rateInput.value || "").trim());
+                var count = parseInt((countInput.value || "0").trim(), 10);
+                if (isNaN(rate) || rate <= 0) { errMsg = "第" + (i + 1) + "行倍率无效。"; break; }
+                if (isNaN(count) || count < 0) { errMsg = "第" + (i + 1) + "行张数无效。"; break; }
+
+                var sp = calcSinglePrice(code, String(rate), L);
+                if (sp.error) { errMsg = "第" + (i + 1) + "行：" + sp.error; break; }
+
+                // 优待折算（复用主区优待类型）
+                var isBerth = /^YW_|^YB_|^RW_|^GR_/.test(code) || (code === "CUSTOM" && rate > 1.0);
+                var discItems = applyConvDiscount(sp.items, discountType, isBerth);
+                var unitPrice = 0;
+                discItems.forEach(function (it) { unitPrice += it.half; });
+
+                entries.push({ name: name, code: code, rate: rate, count: count, unitPrice: unitPrice });
+                totalTickets += count;
+            }
+
+            if (errMsg) {
+                els.groupTotal.textContent = "—";
+                els.groupDetail.textContent = "错误：" + errMsg;
+                return;
+            }
+
+            // 计算毛总额
+            var gross = 0;
+            entries.forEach(function (e) { gross += e.unitPrice * e.count; });
+
+            // 减免张数：满20免1，每增10再免1
+            var freeCount = 0;
+            if (totalTickets >= 20) {
+                freeCount = 1 + Math.floor((totalTickets - 20) / 10);
+            }
+
+            // 找最低单价席别
+            var minUnit = Infinity, minName = "";
+            entries.forEach(function (e) {
+                if (e.unitPrice < minUnit) { minUnit = e.unitPrice; minName = e.name; }
+            });
+
+            var deduction = freeCount * minUnit;
+            var net = gross - deduction;
+
+            // 显示
+            els.groupTotal.textContent = "￥ " + net.toFixed(2);
+            var detail = "总张数 " + totalTickets + "，毛额 ￥" + gross.toFixed(2);
+            if (freeCount > 0) {
+                detail += "，减免 " + freeCount + " 张 × 最低席别[" + minName + "]￥" + minUnit.toFixed(2) + " = -￥" + deduction.toFixed(2);
+            } else {
+                detail += "（未满 20 张，无减免）";
+            }
+            detail += "，团体净价 ￥" + net.toFixed(2);
+            els.groupDetail.textContent = detail;
+        }
+
         /* ============ 核心：动车组计算 ============ */
         function calcEmu(L) {
             var log = [];
@@ -1055,9 +1290,9 @@
             var result = [];
             for (var i = 0; i < items.length; i++) {
                 var it = items[i];
-                var k = 1.0; // 全价
+                var k = 1.0; // 成人票（全价）
                 if (it.name === "卧铺附加") {
-                    // 卧铺：儿童/学生全价，残军半价
+                    // 卧铺：儿童/学生全价，优待半价
                     if (discountType === "VETERAN") k = 0.5;
                 } else {
                     // 客票/加快/空调：儿童/学生/残军 半价
@@ -1078,12 +1313,23 @@
             var price, raw, label;
             if (discountType === "NONE") {
                 price = toHalf(P_exec); raw = P_exec; label = "执行票价";
-                log.push("全价 = 执行票价 " + P_exec.toFixed(4) + " → " + price);
+                log.push("成人票（全价）= 执行票价 " + P_exec.toFixed(4) + " → " + price);
             } else if (discountType === "VETERAN") {
-                raw = P_pub * 0.5;
-                price = toHalf(raw);
-                label = "残军票（公布价×50%）";
-                log.push("残军票 = 公布价 " + P_pub.toFixed(4) + " × 50% = " + raw.toFixed(4) + " → " + price);
+                // 优待票：执行价×50%；执行价≥公布价40%时下限为公布价40%，低于则按执行价
+                var vet50 = P_exec * 0.5;
+                var floor = P_pub * 0.4;
+                if (P_exec >= floor) {
+                    raw = Math.max(vet50, floor);
+                    price = toHalf(raw);
+                    label = "优待票（max(执行价×50%, 公布价×40%)）";
+                    log.push("优待票：执行价 " + P_exec.toFixed(4) + " ≥ 公布价×40% " + floor.toFixed(4));
+                    log.push("  = max(执行价×50%=" + vet50.toFixed(4) + ", 公布价×40%=" + floor.toFixed(4) + ") = " + raw.toFixed(4) + " → " + price);
+                } else {
+                    raw = P_exec;
+                    price = toHalf(raw);
+                    label = "优待票（执行价<公布价×40%，按执行价）";
+                    log.push("优待票：执行价 " + P_exec.toFixed(4) + " < 公布价×40% " + floor.toFixed(4) + "，按执行价 = " + raw.toFixed(4) + " → " + price);
+                }
             } else if (discountType === "CHILD") {
                 var k = childEmuK(seatCode);
                 raw = P_exec * k;
@@ -1179,7 +1425,7 @@
 
                 // 优待折算
                 var discItems = applyConvDiscount(result.items, discountType, result.isBerth);
-                logLines.push("--- 优待折算（" + ({ NONE: "全价", CHILD: "儿童", STUDENT: "学生", VETERAN: "残军" }[discountType]) + "）---");
+                logLines.push("--- 优待折算（" + ({ NONE: "成人票", CHILD: "儿童票", STUDENT: "学生票", VETERAN: "优待票" }[discountType]) + "）---");
                 discItems.forEach(function (it) {
                     logLines.push(it.name + ": " + it.raw.toFixed(4) + " → " + it.half);
                 });
@@ -1226,6 +1472,15 @@
                 finalLabel += "（含保险）";
             }
 
+            // 票价折扣（作用于全部计算完成后，输入为折数 1～9.5）
+            var discZhe = parseFloat((els.finalDiscount.value || "").trim());
+            var finalDisc = (!isNaN(discZhe) && discZhe > 0 && discZhe < 10) ? discZhe / 10 : 1.0;
+            if (finalDisc < 1.0) {
+                var beforeDisc = finalPrice;
+                finalPrice = toHalf(finalPrice * finalDisc);
+                logLines.push("票价折扣 " + discZhe + " 折(×" + finalDisc.toFixed(2) + ")：" + beforeDisc.toFixed(2) + " → " + finalPrice.toFixed(2));
+            }
+
             els.priceValue.textContent = "￥ " + finalPrice.toFixed(2);
             els.priceValue.classList.remove("err");
             els.priceLabel.textContent = finalLabel;
@@ -1244,11 +1499,18 @@
             lines.push("优待：" + els.discount.options[els.discount.selectedIndex].text);
             if (els.noSeat.checked) lines.push("无座：是");
             if (els.insurance.checked) lines.push("强制保险：是(×1.02)");
+            if (finalDisc < 1.0) {
+                lines.push("票价折扣：" + discZhe + " 折(×" + finalDisc.toFixed(2) + ")");
+            }
             lines.push("");
             lines.push("最终票价：￥ " + finalPrice.toFixed(2));
             els.output.value = lines.join("\n");
 
             els.processBody.textContent = logLines.join("\n");
+
+            // 团体票（独立计算，不影响主显示）
+            calcGroup(L, discountType);
+
             setStatus("计算完成。");
         };
 
@@ -1332,21 +1594,27 @@
             els.discount.value = "NONE";
             els.noSeat.checked = false;
             els.insurance.checked = false;
+            els.finalDiscount.value = "";
             els.alphaFloat.value = "";
             els.convSeat.value = "YZ";
+            els.convMinKm.value = "";
             els.emuSeat.value = "ZE";
             els.convClass.value = "ORDINARY";
             els.convAC.value = "NONE";
             els.convOverrail.checked = false;
             window.onConvSeatChange();
             window.onEmuSeatChange();
+            // 团体票：取消勾选并清空行
+            els.groupEnable.checked = false;
+            window.onGroupToggle();
+            els.groupRows.innerHTML = "";
             updateDiscountHint();
             window.calc();
             setStatus("已清空（特殊区段设置保留）。");
         };
 
         window.loadExample = function () {
-            // 示例：北京-上海 1318km 硬卧下铺 快速 新空调 全价
+            // 示例：北京-上海 1318km 硬卧下铺 快速 新空调 成人票
             els.trainType.value = "conventional";
             window.onTrainTypeChange();
             els.distance.value = "1318";
@@ -1358,7 +1626,9 @@
             els.discount.value = "NONE";
             els.noSeat.checked = false;
             els.insurance.checked = false;
+            els.finalDiscount.value = "";
             els.alphaFloat.value = "";
+            els.convMinKm.value = "";
             els.specialRoute.value = "NONE";
             window.onSpecialRouteChange();
             updateDiscountHint();
