@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="中国铁路客运票价计算器 — 老式 Windows 风格，依据《铁路客运运价规则》计算普速与动车组票价">
+    <title>票价计算器 — 海兰德 wiki</title>
+    <style>
+        /* ===== 老版本 Windows 经典风格（同 TicketGenerator） ===== */
+        :root {
+            --win-face:      #c0c0c0;
+            --win-shadow:    #808080;
+            --win-highlight: #ffffff;
+            --win-dark:      #000080;
+            --win-text:      #000000;
+            --win-btn-face:  #c0c0c0;
+            --win-frame-d:   #808080;
+            --win-frame-dd:  #000000;
+            --win-frame-l:   #ffffff;
+            --win-frame-ll:  #dfdfdf;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+            background: #008080;
+            font-family: "Tahoma", "MS Sans Serif", "Segoe UI", "Microsoft YaHei", sans-serif;
+            font-size: 12px;
+            color: var(--win-text);
+            overflow: auto;
+        }
+
+        body {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 24px 12px;
+        }
+
+        .win {
+            width: 100%;
+            max-width: 620px;
+            background: var(--win-face);
+            border: 2px solid;
+            border-color: var(--win-frame-l) var(--win-frame-dd) var(--win-frame-dd) var(--win-frame-l);
+            box-shadow: 2px 2px 0 #000;
+            margin-bottom: 24px;
+        }
+
+        .win__titlebar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 22px;
+            padding: 0 2px 0 4px;
+            background: var(--win-dark);
+            color: #fff;
+            font-weight: bold;
+            user-select: none;
+        }
+        .win__title { display: flex; align-items: center; gap: 6px; }
+        .win__icon {
+            width: 14px; height: 14px;
+            background:
+                linear-gradient(45deg, #fff 50%, transparent 50) 0 0 / 7px 7px no-repeat,
+                linear-gradient(-45deg, #fff 50%, transparent 50) 100% 0 / 7px 7px no-repeat;
+            opacity: .9;
+        }
+        .win__buttons { display: flex; gap: 2px; }
+        .win-btn-min, .win-btn-close {
+            width: 18px; height: 16px;
+            background: var(--win-btn-face);
+            border: 1px solid;
+            border-color: var(--win-frame-l) var(--win-frame-dd) var(--win-frame-dd) var(--win-frame-l);
+            color: #000;
+            font-family: "Marlett", "Tahoma", sans-serif;
+            font-size: 10px;
+            font-weight: bold;
+            line-height: 1;
+            display: flex; align-items: center; justify-content: center;
+            cursor: default;
+            padding: 0;
+        }
+        .win-btn-close:active, .win-btn-min:active {
+            border-color: var(--win-frame-dd) var(--win-frame-l) var(--win-frame-l) var(--win-frame-dd);
+        }
+
+        .win__body { padding: 12px; }
+
+        fieldset {
+            border: 1px solid;
+            border-color: var(--win-frame-d) #fff #fff var(--win-frame-d);
+            margin: 0 0 10px 0;
+            padding: 10px 10px 8px;
+            background: var(--win-face);
+        }
+        legend {
+            padding: 0 4px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .field:last-child { margin-bottom: 0; }
+        .field label {
+            width: 78px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        .field input,
+        .field select {
+            flex: 1;
+            min-width: 0;
+            height: 21px;
+            border: 1px solid;
+            border-color: var(--win-frame-dd) var(--win-frame-l) var(--win-frame-l) var(--win-frame-dd);
+            background: #fff;
+            font-family: inherit;
+            font-size: 12px;
+            padding: 2px 4px;
+            outline: none;
+        }
+        .field input:focus,
+        .field select:focus { border-color: var(--win-dark); }
+        .field select { padding: 1px 2px; }
+
+        .field-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .field-row .field { flex: 1 1 0; min-width: 0; }
+        .field-row .field label { width: auto; min-width: 48px; }
+
+        .hint {
+            color: #404040;
+            font-size: 11px;
+            margin: 2px 0 6px 86px;
+        }
+
+        /* 单选/复选行 */
+        .check-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+        .check-row label {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+        .check-row input { margin: 0; }
+
+        /* 席别 + 费率组合 */
+        .seat-group {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            gap: 4px;
+            min-width: 0;
+        }
+        .seat-group select {
+            flex: 1;
+            min-width: 0;
+            height: 21px;
+            padding: 1px 2px;
+            border: 1px solid;
+            border-color: var(--win-frame-dd) var(--win-frame-l) var(--win-frame-l) var(--win-frame-dd);
+            background: #fff;
+            font-family: inherit;
+            font-size: 12px;
+            outline: none;
+        }
+        .seat-group select:focus { border-color: var(--win-dark); }
+        .seat-group .rate-box {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            white-space: nowrap;
+            font-size: 11px;
+        }
+        .seat-group .rate-box input {
+            width: 64px;
+            min-width: 0;
+            height: 21px;
+            text-align: right;
+            border: 1px solid;
+            border-color: var(--win-frame-dd) var(--win-frame-l) var(--win-frame-l) var(--win-frame-dd);
+            background: #fff;
+            font-family: inherit;
+            font-size: 12px;
+            padding: 2px 3px;
+            outline: none;
+        }
+        .seat-group .rate-box input:focus { border-color: var(--win-dark); }
+        .seat-group .rate-box .unit { color: #404040; }
+
+        /* 按钮 */
+        .btn {
+            min-width: 75px;
+            height: 23px;
+            padding: 0 10px;
+            background: var(--win-btn-face);
+            border: 2px solid;
+            border-color: var(--win-frame-l) var(--win-frame-dd) var(--win-frame-dd) var(--win-frame-l);
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            color: #000;
+            box-shadow:
+                inset -1px -1px 0 var(--win-frame-d),
+                inset 1px 1px 0 var(--win-frame-ll);
+        }
+        .btn:active,
+        .btn.is-pressed {
+            border-color: var(--win-frame-dd) var(--win-frame-l) var(--win-frame-l) var(--win-frame-dd);
+            box-shadow:
+                inset 1px 1px 0 var(--win-frame-d),
+                inset -1px -1px 0 var(--win-frame-ll);
+            padding: 1px 9px 0 11px;
+        }
+        .btn:focus { outline: 1px dotted #000; outline-offset: -4px; }
+
+        /* 输出区 */
+        .price-display {
+            border: 2px inset #fff;
+            background: #fff;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .price-display .label {
+            font-size: 11px;
+            color: #404040;
+            margin-bottom: 2px;
+        }
+        .price-display .value {
+            font-family: "Tahoma", "Segoe UI", sans-serif;
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--win-dark);
+            letter-spacing: 1px;
+        }
+        .price-display .value.err { color: #a00; font-size: 16px; }
+
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border: 1px inset #fff;
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+        .detail-table th,
+        .detail-table td {
+            border: 1px solid #d0d0d0;
+            padding: 2px 6px;
+            text-align: right;
+        }
+        .detail-table th {
+            background: var(--win-face);
+            font-weight: bold;
+            text-align: center;
+        }
+        .detail-table td.name { text-align: left; }
+
+        .output-wrap { position: relative; margin-bottom: 8px; }
+        .output {
+            width: 100%;
+            height: 80px;
+            resize: vertical;
+            border: 1px solid;
+            border-color: var(--win-frame-dd) var(--win-frame-l) var(--win-frame-l) var(--win-frame-dd);
+            background: #fff;
+            font-family: "Consolas", "Courier New", monospace;
+            font-size: 12px;
+            padding: 4px;
+            outline: none;
+        }
+
+        /* 折叠区 */
+        .collapsible {
+            border: 1px solid;
+            border-color: var(--win-frame-d) #fff #fff var(--win-frame-d);
+            background: var(--win-face);
+            margin-bottom: 8px;
+        }
+        .collapsible__head {
+            padding: 3px 8px;
+            cursor: pointer;
+            user-select: none;
+            font-weight: bold;
+        }
+        .collapsible__body {
+            display: none;
+            padding: 6px 8px;
+            border-top: 1px solid var(--win-frame-d);
+            background: #fff;
+            font-family: "Consolas", "Courier New", monospace;
+            font-size: 11px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 260px;
+            overflow: auto;
+        }
+        .collapsible.open .collapsible__body { display: block; }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .statusbar {
+            display: flex;
+            gap: 2px;
+            padding: 2px;
+            margin-top: 4px;
+        }
+        .statusbar__panel {
+            flex: 1;
+            border: 1px solid;
+            border-color: var(--win-frame-d) #fff #fff var(--win-frame-d);
+            padding: 2px 6px;
+            min-height: 18px;
+            color: #000;
+        }
+        .statusbar__panel--small { flex: 0 0 120px; }
+
+        .toplinks {
+            position: absolute;
+            top: 6px; left: 6px;
+            z-index: 5;
+        }
+        .toplinks a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 12px;
+            background: rgba(0,0,0,.25);
+            padding: 2px 8px;
+            border: 1px solid;
+            border-color: #fff #404040 #404040 #fff;
+        }
+        .toplinks a:hover { background: rgba(0,0,0,.4); }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 480px) {
+            .field { flex-wrap: wrap; }
+            .field label { width: 100%; text-align: left; }
+            .hint { margin-left: 0; }
+            .field-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toplinks">
+        <a href="TicketGenerator.html">◄ 车票生成器</a>
+        <a href="CPSC.html">◄ 返回说明</a>
+    </div>
+
+    <div class="win" role="dialog" aria-labelledby="winTitle">
+        <div class="win__titlebar">
+            <span class="win__title">
+                <span class="win__icon" aria-hidden="true"></span>
+                <span id="winTitle">中国铁路客运票价计算器</span>
+            </span>
+            <span class="win__buttons">
+                <button class="win-btn-min" type="button" title="最小化" aria-label="最小化" onclick="this.classList.toggle('is-pressed')">_</button>
+                <button class="win-btn-close" type="button" title="关闭" aria-label="关闭" onclick="window.location.href='CPSC.html'">×</button>
+            </span>
+        </div>
+
+        <div class="win__body">
+            <form id="form" autocomplete="off" onsubmit="return false">
+                <!-- ===== 基础 ===== -->
+                <fieldset>
+                    <legend>基础信息</legend>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="trainType">列车类型:</label>
+                            <select id="trainType" onchange="onTrainTypeChange(); calc()">
+                                <option value="conventional">普速列车</option>
+                                <option value="emu">动车组 (D/G/C)</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="distance">运价里程:</label>
+                            <input type="text" id="distance" inputmode="numeric" placeholder="1318" oninput="calc()">
+                        </div>
+                    </div>
+                    <div class="hint">运价里程 L（公里），按《铁路客运运价里程表》确定，手动填写。</div>
+                </fieldset>
+
+                <!-- ===== 普速专属 ===== -->
+                <fieldset id="fsConv">
+                    <legend>普速列车参数</legend>
+                    <div class="field">
+                        <label for="convSeat">席别:</label>
+                        <span class="seat-group">
+                            <select id="convSeat" onchange="onConvSeatChange(); calc()">
+                                <option value="YZ"   data-rate="1.00">硬座 (YZ)</option>
+                                <option value="RZ"   data-rate="2.00">软座 (RZ)</option>
+                                <option value="YW_U" data-rate="1.10">硬卧上铺</option>
+                                <option value="YW_M" data-rate="1.20">硬卧中铺</option>
+                                <option value="YW_L" data-rate="1.30">硬卧下铺</option>
+                                <option value="YB_U" data-rate="1.56">包房硬卧上铺</option>
+                                <option value="YB_L" data-rate="1.69">包房硬卧下铺</option>
+                                <option value="RW_U" data-rate="1.75">软卧上铺</option>
+                                <option value="RW_L" data-rate="1.95">软卧下铺</option>
+                                <option value="GR_U" data-rate="2.10">高级软卧上铺</option>
+                                <option value="GR_L" data-rate="2.30">高级软卧下铺</option>
+                                <option value="PC"   data-rate="0.50">棚车 (PC)</option>
+                                <!-- 无费率项 -->
+                                <option value="RZ1"  data-rate="">一等软座 (无费率)</option>
+                                <option value="RZ2"  data-rate="">二等软座 (无费率)</option>
+                                <option value="RZT"  data-rate="">特等软座 (无费率)</option>
+                                <option value="CUSTOM" data-rate="">自定义 (手动输入倍率)</option>
+                            </select>
+                            <span class="rate-box">
+                                <input type="text" id="convRate" inputmode="decimal" placeholder="1.00" oninput="calc()">
+                                <span class="unit" id="convRateUnit">倍率</span>
+                            </span>
+                        </span>
+                    </div>
+                    <div class="hint" id="convSeatHint">倍率相对硬座基价（硬座=1.0）。选"自定义"或无费率项时手动输入。</div>
+
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="convClass">列车等级:</label>
+                            <select id="convClass" onchange="calc()">
+                                <option value="ORDINARY">普客（无加快）</option>
+                                <option value="FAST">普快（普通加快）</option>
+                                <option value="EXPRESS">快速/特快/直达（特别加快）</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="convAC">空调类型:</label>
+                            <select id="convAC" onchange="calc()">
+                                <option value="NONE">无空调</option>
+                                <option value="AC">普通空调</option>
+                                <option value="NEWAC">新型空调（×1.5）</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="check-row">
+                        <label><input type="checkbox" id="convOverrail" onchange="calc()"> 过轨运输（卧铺不足400km按附表1折算）</label>
+                    </div>
+                </fieldset>
+
+                <!-- ===== 动车组专属 ===== -->
+                <fieldset id="fsEmu" class="hidden">
+                    <legend>动车组参数</legend>
+                    <div class="field">
+                        <label for="emuSeat">席别:</label>
+                        <span class="seat-group">
+                            <select id="emuSeat" onchange="onEmuSeatChange(); calc()">
+                                <option value="ZE"   data-rate="0.30855">二等座 (ZE)</option>
+                                <option value="ZY"   data-rate="0.37026">一等座 (ZY)</option>
+                                <option value="ZT"   data-rate="0.55539">特等座 (ZT)</option>
+                                <option value="SW"   data-rate="0.92565">商务座 (SW)</option>
+                                <option value="DW_U" data-rate="0.592416">动卧上铺</option>
+                                <option value="DW_L" data-rate="0.667092">动卧下铺</option>
+                                <!-- 无费率项 -->
+                                <option value="PREFER" data-rate="">优选一等座 (无费率)</option>
+                                <option value="DGN"    data-rate="">多功能座 (无费率)</option>
+                                <option value="YW1"    data-rate="">一等卧 (无费率)</option>
+                                <option value="YW2"    data-rate="">二等卧 (无费率)</option>
+                                <option value="CUSTOM" data-rate="">自定义 (手动输入费率)</option>
+                            </select>
+                            <span class="rate-box">
+                                <input type="text" id="emuRate" inputmode="decimal" placeholder="0.30855" oninput="calc()">
+                                <span class="unit">元/km</span>
+                            </span>
+                        </span>
+                    </div>
+                    <div class="hint">费率为含+10%上浮的公布票价费率（元/km）。</div>
+
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="emuPrefix">车次字头:</label>
+                            <select id="emuPrefix" onchange="calc()">
+                                <option value="D">D 动车</option>
+                                <option value="G">G 高速</option>
+                                <option value="C">C 城际</option>
+                                <option value="S">S 市郊</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="emuExecRate">执行折扣:</label>
+                            <select id="emuExecRate" onchange="calc()">
+                                <option value="1.00">10 折（公布价）</option>
+                                <option value="0.95">9.5 折</option>
+                                <option value="0.90">9 折</option>
+                                <option value="0.85">8.5 折</option>
+                                <option value="0.80">8 折</option>
+                                <option value="0.75">7.5 折</option>
+                                <option value="0.70">7 折</option>
+                                <option value="0.65">6.5 折</option>
+                                <option value="0.60">6 折</option>
+                                <option value="0.55">5.5 折</option>
+                                <option value="0.50">5 折</option>
+                                <option value="0.45">4.5 折</option>
+                                <option value="0.40">4 折</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="hint">≤70km 不得打折；二等座折扣后不低于同里程新空软座票价（仅提示，本工具不强校验）。</div>
+                </fieldset>
+
+                <!-- ===== 优待与开关 ===== -->
+                <fieldset>
+                    <legend>优待与开关</legend>
+                    <div class="field">
+                        <label for="discount">优待类型:</label>
+                        <select id="discount" onchange="calc()">
+                            <option value="NONE">全价</option>
+                            <option value="CHILD">儿童票</option>
+                            <option value="STUDENT">学生票</option>
+                            <option value="VETERAN">残疾军人票</option>
+                        </select>
+                    </div>
+                    <div class="hint" id="discountHint">普速与动车组优待规则不同，自动按列车类型套用。</div>
+
+                    <div class="check-row">
+                        <label><input type="checkbox" id="noSeat" onchange="calc()"> 无座（=二等座/硬座票价）</label>
+                        <label><input type="checkbox" id="insurance"> 强制保险（2013年前，×1.02）</label>
+                    </div>
+                </fieldset>
+
+                <!-- ===== 高级（α浮动 + 特殊区段） ===== -->
+                <fieldset>
+                    <legend>高级（浮动与特殊区段）</legend>
+                    <div class="field">
+                        <label for="alphaFloat">α浮动:</label>
+                        <input type="text" id="alphaFloat" inputmode="decimal" placeholder="0（不浮动）" oninput="calc()">
+                    </div>
+                    <div class="hint">公布票价 α 浮动：最终 = 联合票价 + round(联合票价×α)。如上浮10%填0.10。</div>
+
+                    <div class="field">
+                        <label for="specialRoute">特殊区段:</label>
+                        <select id="specialRoute" onchange="onSpecialRouteChange(); calc()">
+                            <option value="NONE">无</option>
+                            <option value="QINGHAI">青藏格-拉段（每km加收）</option>
+                            <option value="GUANGSHEN">广深铁路（总上浮225%）</option>
+                            <option value="JINGJIU">京九线广铁段（缺数据，手动输入）</option>
+                            <option value="CUSTOM">自定义</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="specialParam">区段参数:</label>
+                        <input type="text" id="specialParam" inputmode="decimal" placeholder="见下方说明" oninput="onSpecialParamInput(); calc()">
+                    </div>
+                    <div class="hint" id="specialHint">选择区段后自动填入参数。参数含义：青藏=每km加收系数基准；广深=总上浮率（默认2.25）；京九/自定义=总上浮率。</div>
+                </fieldset>
+
+                <!-- ===== 计算结果 ===== -->
+                <fieldset>
+                    <legend>计算结果</legend>
+                    <div class="price-display">
+                        <div class="label" id="priceLabel">最终票价</div>
+                        <div class="value" id="priceValue">—</div>
+                    </div>
+
+                    <div class="output-wrap">
+                        <textarea class="output" id="output" readonly aria-label="票价明细文本" onclick="this.select()"></textarea>
+                    </div>
+
+                    <!-- 分项明细表 -->
+                    <table class="detail-table" id="detailTable">
+                        <thead>
+                            <tr><th>项目</th><th>原始值</th><th>取整(0.5元)</th></tr>
+                        </thead>
+                        <tbody id="detailBody">
+                            <tr><td colspan="3" style="text-align:center;color:#888;">填写参数后将显示明细</td></tr>
+                        </tbody>
+                    </table>
+
+                    <!-- 可折叠中间过程 -->
+                    <div class="collapsible" id="processPanel">
+                        <div class="collapsible__head" onclick="toggleProcess()">
+                            <span id="processToggle">▸</span> 计算过程（点击展开）
+                        </div>
+                        <div class="collapsible__body" id="processBody"></div>
+                    </div>
+
+                    <div class="actions">
+                        <button class="btn" type="button" onclick="copyOutput()">复制结果</button>
+                        <button class="btn" type="button" onclick="copyDetail()">复制明细</button>
+                        <button class="btn" type="button" onclick="clearAll()">清空</button>
+                        <button class="btn" type="button" onclick="loadExample()">示例</button>
+                    </div>
+                </fieldset>
+
+                <div class="statusbar">
+                    <div class="statusbar__panel" id="status">就绪。</div>
+                    <div class="statusbar__panel statusbar__panel--small" id="statusCount">里程: 0 km</div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        "use strict";
+
+        /* ============ 常量（DS 版程序实现值） ============ */
+        var R_BASE = 0.05861;          // 基本票价率 元/(人·km)
+        var R_EXPRESS_UNIT = R_BASE * 0.2;   // 普通加快费率 0.011722
+        var R_AC_UNIT = R_BASE * 0.25;       // 空调费率 0.0146525
+
+        // 普速递远递减分段：[区间上限km, 系数]
+        var DECAY_SEGS = [
+            [200, 1.00],
+            [500, 0.90],
+            [1000, 0.80],
+            [1500, 0.70],
+            [2500, 0.60],
+            [Infinity, 0.50]
+        ];
+
+        // 计费里程区间宽度表：[区间上限km, 宽度w]
+        var BILL_SEGS = [
+            [200, 10],
+            [400, 20],
+            [700, 30],
+            [1100, 40],
+            [1600, 50],
+            [2200, 60],
+            [2900, 70],
+            [3700, 80],
+            [4600, 90],
+            [Infinity, 100]
+        ];
+
+        // 起码里程
+        var MIN_KM = {
+            seat: 20,
+            express: 100,
+            berth: 400,
+            ac: 20
+        };
+
+        // 动车组简化递远递减：[上限km, 系数]
+        var EMU_DECAY = [
+            [500, 1.00],
+            [1000, 0.90],
+            [Infinity, 0.80]
+        ];
+
+        /* ============ DOM ============ */
+        var $ = function (id) { return document.getElementById(id); };
+        var els = {
+            trainType: $("trainType"),
+            distance: $("distance"),
+            fsConv: $("fsConv"),
+            fsEmu: $("fsEmu"),
+            convSeat: $("convSeat"),
+            convRate: $("convRate"),
+            convRateUnit: $("convRateUnit"),
+            convSeatHint: $("convSeatHint"),
+            convClass: $("convClass"),
+            convAC: $("convAC"),
+            convOverrail: $("convOverrail"),
+            emuSeat: $("emuSeat"),
+            emuRate: $("emuRate"),
+            emuPrefix: $("emuPrefix"),
+            emuExecRate: $("emuExecRate"),
+            discount: $("discount"),
+            discountHint: $("discountHint"),
+            noSeat: $("noSeat"),
+            insurance: $("insurance"),
+            alphaFloat: $("alphaFloat"),
+            specialRoute: $("specialRoute"),
+            specialParam: $("specialParam"),
+            specialHint: $("specialHint"),
+            priceLabel: $("priceLabel"),
+            priceValue: $("priceValue"),
+            output: $("output"),
+            detailBody: $("detailBody"),
+            processBody: $("processBody"),
+            processPanel: $("processPanel"),
+            processToggle: $("processToggle"),
+            status: $("status"),
+            statusCount: $("statusCount")
+        };
+
+        /* ============ 工具函数 ============ */
+        function setStatus(msg) { els.status.textContent = msg; }
+
+        function val(el) { return (el.value || "").trim(); }
+
+        function num(el, defaultVal) {
+            var v = parseFloat(val(el));
+            return isNaN(v) ? (defaultVal !== undefined ? defaultVal : NaN) : v;
+        }
+
+        // 四舍五入到分（0.01元）
+        function round2(x) { return Math.round(x * 100) / 100; }
+
+        // 尾数取整到 0.5 元
+        function toHalf(x) {
+            var floor = Math.floor(x);
+            var frac = x - floor;
+            if (frac < 0.25) return floor + 0.0;
+            if (frac < 0.75) return floor + 0.5;
+            return floor + 1.0;
+        }
+
+        // 计费里程（区间取均值）
+        function billDistance(L) {
+            var prev = 0;
+            for (var i = 0; i < BILL_SEGS.length; i++) {
+                var upper = BILL_SEGS[i][0], w = BILL_SEGS[i][1];
+                if (L <= upper) {
+                    var segStart = Math.floor((L - prev) / w) * w + prev;
+                    // 注意：区间是相对于"全程"的，但官方表是连续的，这里按全程分段
+                    // 重新实现：找到 L 所在的绝对区间
+                    break;
+                }
+                prev = upper;
+            }
+            // 重新按绝对里程查表
+            return computeBill(L);
+        }
+
+        // 绝对里程 → 计费里程（取所在区间两端均值）
+        function computeBill(L) {
+            var prev = 0;
+            for (var i = 0; i < BILL_SEGS.length; i++) {
+                var upper = BILL_SEGS[i][0], w = BILL_SEGS[i][1];
+                if (L <= upper) {
+                    var segStart = Math.floor((L - 1) / w) * w + 1; // 区间起点
+                    var segEnd = segStart + w - 1;
+                    // 注意：第一段 1-200 宽度10 → 区间如 1-10,11-20...;均值 = (起+止)/2
+                    // 但官方做法是按全程连续：实际里程落入某区间，计费里程=区间中值
+                    // 此处采用文档示例：523km → 宽度30 → [510,540] → 均值525
+                    // 即区间起点= floor(L/w)*w
+                    var start = Math.floor(L / w) * w;
+                    var end = start + w;
+                    return (start + end) / 2;
+                }
+                prev = upper;
+            }
+            return L;
+        }
+
+        // 普速递远递减：返回计价里程 L_adj（分段加权）
+        function decayDistance(L) {
+            var adj = 0, prev = 0;
+            for (var i = 0; i < DECAY_SEGS.length; i++) {
+                var upper = DECAY_SEGS[i][0], coef = DECAY_SEGS[i][1];
+                if (L <= upper) {
+                    adj += (L - prev) * coef;
+                    break;
+                }
+                adj += (upper - prev) * coef;
+                prev = upper;
+            }
+            return adj;
+        }
+
+        // 动车组简化递远递减
+        function emuDecayDistance(L) {
+            var adj = 0, prev = 0;
+            for (var i = 0; i < EMU_DECAY.length; i++) {
+                var upper = EMU_DECAY[i][0], coef = EMU_DECAY[i][1];
+                if (L <= upper) {
+                    adj += (L - prev) * coef;
+                    break;
+                }
+                adj += (upper - prev) * coef;
+                prev = upper;
+            }
+            return adj;
+        }
+
+        /* ============ Cookies（仅特殊区段参数） ============ */
+        var COOKIE_KEY = "farecalc_special";
+        function saveSpecialCookie() {
+            try {
+                var data = {
+                    route: els.specialRoute.value,
+                    param: els.specialParam.value
+                };
+                document.cookie = COOKIE_KEY + "=" + encodeURIComponent(JSON.stringify(data)) +
+                    ";path=/;max-age=31536000;SameSite=Lax";
+            } catch (e) {}
+        }
+        function loadSpecialCookie() {
+            try {
+                var m = document.cookie.match(new RegExp(COOKIE_KEY + "=([^;]+)"));
+                if (m) {
+                    var data = JSON.parse(decodeURIComponent(m[1]));
+                    if (data && data.route) {
+                        els.specialRoute.value = data.route;
+                        els.specialParam.value = data.param || "";
+                        onSpecialRouteChange(false);
+                    }
+                }
+            } catch (e) {}
+        }
+
+        /* ============ 联动逻辑 ============ */
+        window.onTrainTypeChange = function () {
+            var isEmu = els.trainType.value === "emu";
+            els.fsConv.classList.toggle("hidden", isEmu);
+            els.fsEmu.classList.toggle("hidden", !isEmu);
+            updateDiscountHint();
+        };
+
+        window.onConvSeatChange = function () {
+            var opt = els.convSeat.options[els.convSeat.selectedIndex];
+            var rate = opt.getAttribute("data-rate");
+            if (rate !== null && rate !== "") {
+                els.convRate.value = rate;
+            }
+            // 无费率提示
+            var code = els.convSeat.value;
+            if (rate === "" && code !== "CUSTOM") {
+                els.convSeatHint.textContent = "该席别无官方费率数据，请在右侧手动输入倍率。";
+            } else if (code === "CUSTOM") {
+                els.convSeatHint.textContent = "自定义倍率，手动输入（硬座=1.0）。";
+            } else {
+                els.convSeatHint.textContent = "倍率相对硬座基价（硬座=1.0）。选\u201c自定义\u201d或无费率项时手动输入。";
+            }
+        };
+
+        window.onEmuSeatChange = function () {
+            var opt = els.emuSeat.options[els.emuSeat.selectedIndex];
+            var rate = opt.getAttribute("data-rate");
+            if (rate !== null && rate !== "") {
+                els.emuRate.value = rate;
+            }
+        };
+
+        function updateDiscountHint() {
+            var isEmu = els.trainType.value === "emu";
+            var d = els.discount.value;
+            var txt = "";
+            if (!isEmu) {
+                switch (d) {
+                    case "NONE": txt = "全价。"; break;
+                    case "CHILD": txt = "普速儿童：客票/加快/空调半价，卧铺全价。"; break;
+                    case "STUDENT": txt = "普速学生：硬席相关半价（客票+加快+空调），硬卧用差额法。"; break;
+                    case "VETERAN": txt = "普速残军：客票+全部附加票（含卧铺）均半价。"; break;
+                }
+            } else {
+                switch (d) {
+                    case "NONE": txt = "全价。"; break;
+                    case "CHILD": txt = "动车儿童：二等/一等×50%，特等/商务×80%，卧铺×70%。"; break;
+                    case "STUDENT": txt = "动车学生（2025新规）：执行价×75%，下限公布价×40%。"; break;
+                    case "VETERAN": txt = "动车残军：公布价×50%。"; break;
+                }
+            }
+            els.discountHint.textContent = txt;
+        }
+        els.discount.addEventListener("change", updateDiscountHint);
+
+        // 特殊区段预设
+        var SPECIAL_PRESETS = {
+            NONE: { param: "", hint: "选择区段后自动填入参数。参数含义：青藏=每km加收系数基准；广深=总上浮率（默认2.25）；京九/自定义=总上浮率。" },
+            QINGHAI: { param: "1", hint: "青藏格-拉段：按每km加收。参数=基准倍数（1=标准加收：软座0.09/硬卧0.10/软卧0.16 元/km）。已存入Cookies。" },
+            GUANGSHEN: { param: "2.25", hint: "广深铁路：总上浮225%。参数=总上浮率（默认2.25）。已存入Cookies。" },
+            JINGJIU: { param: "", hint: "京九线广铁段：缺精确上浮率，请手动填总上浮率（如1.5=上浮50%）。>2000km直通不上浮。已存入Cookies。" },
+            CUSTOM: { param: "", hint: "自定义：参数=总上浮率（如1.1=上浮10%）。已存入Cookies。" }
+        };
+        window.onSpecialRouteChange = function (save) {
+            var key = els.specialRoute.value;
+            var p = SPECIAL_PRESETS[key] || SPECIAL_PRESETS.NONE;
+            // 仅在参数为空或切换时填入预设值
+            if (!els.specialParam.value || save !== false) {
+                els.specialParam.value = p.param;
+            }
+            els.specialHint.textContent = p.hint;
+            if (save !== false) saveSpecialCookie();
+        };
+        window.onSpecialParamInput = function () { saveSpecialCookie(); };
+
+        /* ============ 折叠 ============ */
+        window.toggleProcess = function () {
+            var open = els.processPanel.classList.toggle("open");
+            els.processToggle.textContent = open ? "▾" : "▸";
+        };
+
+        /* ============ 核心：普速计算 ============ */
+        // 返回 { items:[{name,raw,half}], log:[...], error }
+        function calcConventional(L) {
+            var log = [];
+            log.push("=== 普速列车票价计算 ===");
+            log.push("运价里程 L = " + L + " km");
+
+            // 1. 计费里程
+            var Lb = computeBill(L);
+            log.push("计费里程（区间均值） = " + Lb + " km");
+
+            // 2. 递远递减
+            var Ladj = decayDistance(Lb);
+            log.push("递远递减后计价里程 L_adj = " + Ladj.toFixed(2) + " km");
+
+            // 3. 各项计算（先递远递减，基价×L_adj×系数）
+            var kSeat = num(els.convRate, 1.0);
+            if (isNaN(kSeat) || kSeat <= 0) {
+                return { error: "席别倍率无效，请填写。" };
+            }
+            log.push("席别倍率 k_seat = " + kSeat);
+
+            // 判断席别类型
+            var seatCode = els.convSeat.value;
+            var isBerth = /^YW_|^YB_|^RW_|^GR_/.test(seatCode) || (seatCode === "CUSTOM" && kSeat > 1.0);
+            // 注：CUSTOM 且 kSeat>1.0 视为卧铺（影响卧铺起码里程）
+            // 用户明确选择卧铺代号时按卧铺处理
+
+            // 起码里程判定
+            var L_seat = Math.max(Lb, MIN_KM.seat);
+            var Ladj_seat = decayDistance(L_seat);
+            log.push("客票起码里程 " + MIN_KM.seat + " km → 客票计价里程 " + Ladj_seat.toFixed(2));
+
+            // 客票（硬座基价）
+            var P_seat_raw = R_BASE * Ladj_seat; // 客票恒按硬座基价（倍率1.0）
+            log.push("硬座客票（原始） = " + R_BASE + " × " + Ladj_seat.toFixed(2) + " = " + P_seat_raw.toFixed(4));
+
+            // 卧铺附加（仅卧铺席别）
+            var P_berth_raw = 0;
+            if (isBerth) {
+                var L_berth = Math.max(Lb, MIN_KM.berth);
+                var Ladj_berth = decayDistance(L_berth);
+                log.push("卧铺起码里程 " + MIN_KM.berth + " km → 卧铺计价里程 " + Ladj_berth.toFixed(2));
+                // 卧铺附加 = R_BASE × L_adj_卧铺 × (k-1)
+                var berthExtra = kSeat - 1.0;
+                P_berth_raw = R_BASE * Ladj_berth * berthExtra;
+                log.push("卧铺附加（原始） = " + R_BASE + " × " + Ladj_berth.toFixed(2) + " × " + berthExtra.toFixed(2) + " = " + P_berth_raw.toFixed(4));
+
+                // 过轨折算
+                if (els.convOverrail.checked && L < MIN_KM.berth) {
+                    var ratio = overrailRatio(L);
+                    P_berth_raw = R_BASE * decayDistance(MIN_KM.berth) * berthExtra * ratio;
+                    log.push("过轨折算：实际" + L + "km → 比例" + (ratio * 100) + "% → 卧铺附加 " + P_berth_raw.toFixed(4));
+                }
+            }
+
+            // 加快费
+            var P_express_raw = 0;
+            var cls = els.convClass.value;
+            if (cls !== "ORDINARY") {
+                var L_express = Math.max(Lb, MIN_KM.express);
+                var Ladj_express = decayDistance(L_express);
+                log.push("加快起码里程 " + MIN_KM.express + " km → 加快计价里程 " + Ladj_express.toFixed(2));
+                P_express_raw = R_EXPRESS_UNIT * Ladj_express; // 普通加快
+                if (cls === "EXPRESS") {
+                    P_express_raw *= 2; // 特别加快 ×2
+                    log.push("特别加快（×2）→ 加快费原始 " + P_express_raw.toFixed(4));
+                } else {
+                    log.push("普通加快 → 加快费原始 " + P_express_raw.toFixed(4));
+                }
+            } else {
+                log.push("普客：无加快费。");
+            }
+
+            // 空调费
+            var P_ac_raw = 0;
+            var ac = els.convAC.value;
+            if (ac !== "NONE") {
+                var L_ac = Math.max(Lb, MIN_KM.ac);
+                var Ladj_ac = decayDistance(L_ac);
+                P_ac_raw = R_AC_UNIT * Ladj_ac;
+                log.push("空调费（原始） = " + R_AC_UNIT + " × " + Ladj_ac.toFixed(2) + " = " + P_ac_raw.toFixed(4));
+            } else {
+                log.push("无空调：无空调费。");
+            }
+
+            // 4. 上浮顺序：新空调 ×1.5（取整到分）→ 各项取整0.5 → 特别加快已在上面×2
+            //    注意：文档顺序是 先新空调×1.5(到分) → 再取整0.5 → 再加快×2
+            //    这里已把加快×2合并在原始值阶段，为保持等价，新空调×1.5对四项都作用
+            var items = [];
+            if (ac === "NEWAC") {
+                log.push("新空调：各项 ×1.5（取整到分）");
+                P_seat_raw = round2(P_seat_raw * 1.5);
+                P_berth_raw = round2(P_berth_raw * 1.5);
+                P_express_raw = round2(P_express_raw * 1.5);
+                P_ac_raw = round2(P_ac_raw * 1.5);
+            }
+
+            // 5. 各项取整 0.5 元
+            var P_seat = toHalf(P_seat_raw);
+            var P_berth = toHalf(P_berth_raw);
+            var P_express = toHalf(P_express_raw);
+            var P_ac = toHalf(P_ac_raw);
+
+            items.push({ name: "硬座客票", raw: P_seat_raw, half: P_seat });
+            if (isBerth) items.push({ name: "卧铺附加", raw: P_berth_raw, half: P_berth });
+            items.push({ name: "加快票", raw: P_express_raw, half: P_express });
+            items.push({ name: "空调票", raw: P_ac_raw, half: P_ac });
+
+            return { items: items, log: log, isBerth: isBerth };
+        }
+
+        // 过轨卧铺折算比例
+        function overrailRatio(L) {
+            if (L <= 100) return 0.25;
+            if (L <= 200) return 0.50;
+            if (L <= 300) return 0.75;
+            return 1.00;
+        }
+
+        /* ============ 核心：动车组计算 ============ */
+        function calcEmu(L) {
+            var log = [];
+            log.push("=== 动车组票价计算 ===");
+            log.push("运价里程 L = " + L + " km");
+
+            var rate = num(els.emuRate, NaN);
+            if (isNaN(rate) || rate <= 0) {
+                return { error: "动车组费率无效，请填写（元/km）。" };
+            }
+
+            // 简化递远递减
+            var Ladj = emuDecayDistance(L);
+            log.push("动车组简化递远递减 L_adj = " + Ladj.toFixed(2) + " km");
+
+            // 公布票价 = 费率 × L_adj
+            var P_pub = rate * Ladj;
+            log.push("公布票价 = " + rate + " × " + Ladj.toFixed(2) + " = " + P_pub.toFixed(4));
+
+            // 执行票价 = 公布 × 执行折扣
+            var execRate = parseFloat(els.emuExecRate.value);
+            var P_exec = P_pub * execRate;
+            log.push("执行票价（折扣" + (execRate * 100) + "%） = " + P_exec.toFixed(4));
+
+            // 动车组公布票价尾数取整 0.5（执行价阶段）
+            // 实际12306公布价取整到元，执行价再取整到元；此处统一用0.5元便于推演
+            // 这里把"公布票价"作为明细项原始值，执行后取整
+            var items = [];
+            items.push({ name: "公布票价", raw: P_pub, half: toHalf(P_pub) });
+            items.push({ name: "执行票价(" + (execRate * 100) + "%)", raw: P_exec, half: toHalf(P_exec) });
+
+            return { items: items, log: log, emuPub: P_pub, emuExec: P_exec, execRate: execRate };
+        }
+
+        /* ============ 优待折算 ============ */
+        // 对普速：对各项(已取整0.5)分别按优待折算，再取整0.5
+        function applyConvDiscount(items, discountType, isBerth) {
+            var result = [];
+            for (var i = 0; i < items.length; i++) {
+                var it = items[i];
+                var k = 1.0; // 全价
+                if (it.name === "卧铺附加") {
+                    // 卧铺：儿童/学生全价，残军半价
+                    if (discountType === "VETERAN") k = 0.5;
+                } else {
+                    // 客票/加快/空调：儿童/学生/残军 半价
+                    if (discountType === "CHILD" || discountType === "STUDENT" || discountType === "VETERAN") {
+                        k = 0.5;
+                    }
+                }
+                var raw = it.half * k;
+                result.push({ name: it.name + (k < 1 ? " ×" + k : ""), raw: raw, half: toHalf(raw) });
+            }
+            return result;
+        }
+
+        // 动车组优待
+        function applyEmuDiscount(P_pub, P_exec, execRate, discountType, seatCode) {
+            // 返回 { price, raw, label, log[] }
+            var log = [];
+            var price, raw, label;
+            if (discountType === "NONE") {
+                price = toHalf(P_exec); raw = P_exec; label = "执行票价";
+                log.push("全价 = 执行票价 " + P_exec.toFixed(4) + " → " + price);
+            } else if (discountType === "VETERAN") {
+                raw = P_pub * 0.5;
+                price = toHalf(raw);
+                label = "残军票（公布价×50%）";
+                log.push("残军票 = 公布价 " + P_pub.toFixed(4) + " × 50% = " + raw.toFixed(4) + " → " + price);
+            } else if (discountType === "CHILD") {
+                var k = childEmuK(seatCode);
+                raw = P_exec * k;
+                price = toHalf(raw);
+                label = "儿童票（执行价×" + (k * 100) + "%）";
+                log.push("儿童票 = 执行价 " + P_exec.toFixed(4) + " × " + (k * 100) + "% = " + raw.toFixed(4) + " → " + price);
+            } else if (discountType === "STUDENT") {
+                // 折上折：执行价×75%，下限公布价×40%
+                var stu = P_exec * 0.75;
+                var floor = P_pub * 0.40;
+                raw = Math.max(stu, floor);
+                price = toHalf(raw);
+                label = "学生票（执行价×75%，下限公布价×40%）";
+                log.push("学生票 = max(执行价" + P_exec.toFixed(4) + "×75%=" + stu.toFixed(4) + ", 公布价" + P_pub.toFixed(4) + "×40%=" + floor.toFixed(4) + ") = " + raw.toFixed(4) + " → " + price);
+            }
+            return { price: price, raw: raw, label: label, log: log };
+        }
+
+        function childEmuK(seatCode) {
+            // 二等/一等 50%；特等/商务 80%；卧铺 70%
+            if (seatCode === "ZT" || seatCode === "SW") return 0.80;
+            if (/^DW_/.test(seatCode)) return 0.70;
+            return 0.50;
+        }
+
+        /* ============ 主流程 ============ */
+        window.calc = function () {
+            var L = num(els.distance, NaN);
+            els.statusCount.textContent = "里程: " + (isNaN(L) ? 0 : L) + " km";
+
+            if (isNaN(L) || L <= 0) {
+                els.priceValue.textContent = "—";
+                els.priceValue.classList.remove("err");
+                els.priceLabel.textContent = "最终票价";
+                els.output.value = "";
+                els.detailBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#888;">填写里程后将显示明细</td></tr>';
+                els.processBody.textContent = "";
+                setStatus("请填写运价里程。");
+                return;
+            }
+
+            var isEmu = els.trainType.value === "emu";
+            var discountType = els.discount.value;
+            var result, finalPrice, finalLabel, logLines = [];
+
+            if (isEmu) {
+                // 校验：动车席别配普速等级无意义，但动车组无"等级"字段，跳过
+                result = calcEmu(L);
+                if (result.error) { showError(result.error); return; }
+                logLines = logLines.concat(result.log);
+
+                // 无座
+                if (els.noSeat.checked) {
+                    // 无座=二等座：强制改用二等座费率重算
+                    var savedSeat = els.emuSeat.value;
+                    var savedRate = els.emuRate.value;
+                    els.emuSeat.value = "ZE";
+                    window.onEmuSeatChange();
+                    result = calcEmu(L);
+                    els.emuSeat.value = savedSeat;
+                    els.emuRate.value = savedRate;
+                    logLines.push("无座：按二等座票价计。");
+                }
+
+                // 优待
+                var dinfo = applyEmuDiscount(result.emuPub, result.emuExec, result.execRate, discountType, els.emuSeat.value);
+                logLines = logLines.concat(dinfo.log);
+                finalPrice = dinfo.price;
+                finalLabel = dinfo.label;
+
+                // 明细：用优待后
+                els.detailBody.innerHTML =
+                    row("公布票价", result.emuPub, toHalf(result.emuPub)) +
+                    row(dinfo.label, dinfo.raw, dinfo.price);
+
+            } else {
+                // 普速
+                // 无座：强制硬座
+                if (els.noSeat.checked) {
+                    var sSeat = els.convSeat.value, sRate = els.convRate.value;
+                    els.convSeat.value = "YZ";
+                    window.onConvSeatChange();
+                    result = calcConventional(L);
+                    els.convSeat.value = sSeat;
+                    els.convRate.value = sRate;
+                    logLines = logLines.concat(result.log);
+                    logLines.push("无座：按硬座票价计。");
+                } else {
+                    result = calcConventional(L);
+                    logLines = logLines.concat(result.log);
+                }
+                if (result.error) { showError(result.error); return; }
+
+                // 优待折算
+                var discItems = applyConvDiscount(result.items, discountType, result.isBerth);
+                logLines.push("--- 优待折算（" + ({ NONE: "全价", CHILD: "儿童", STUDENT: "学生", VETERAN: "残军" }[discountType]) + "）---");
+                discItems.forEach(function (it) {
+                    logLines.push(it.name + ": " + it.raw.toFixed(4) + " → " + it.half);
+                });
+
+                // 合计
+                var total = 0;
+                discItems.forEach(function (it) { total += it.half; });
+                logLines.push("合计（取整后各项相加） = " + total.toFixed(2));
+
+                finalPrice = total;
+                finalLabel = "旅客票价合计";
+                els.priceLabel.textContent = "旅客票价合计";
+
+                // 明细
+                var html = "";
+                discItems.forEach(function (it) {
+                    html += row(it.name, it.raw, it.half);
+                });
+                html += '<tr><td class="name"><strong>合计</strong></td><td></td><td><strong>' + total.toFixed(2) + '</strong></td></tr>';
+                els.detailBody.innerHTML = html;
+            }
+
+            // α浮动
+            var alpha = num(els.alphaFloat, 0);
+            if (!isNaN(alpha) && alpha !== 0) {
+                var before = finalPrice;
+                finalPrice = finalPrice + Math.round(finalPrice * alpha * 100) / 100;
+                finalPrice = toHalf(finalPrice);
+                logLines.push("α浮动：" + before.toFixed(2) + " × (1+" + alpha + ") → " + finalPrice);
+            }
+
+            // 特殊区段
+            var sp = applySpecialRoute(finalPrice, L, isEmu);
+            if (sp) {
+                logLines.push("特殊区段：" + els.specialRoute.value + " → " + sp.applied);
+                finalPrice = sp.price;
+            }
+
+            // 强制保险
+            if (els.insurance.checked) {
+                var withIns = finalPrice * 1.02;
+                logLines.push("强制保险 ×1.02：" + finalPrice.toFixed(2) + " → " + withIns.toFixed(4));
+                finalPrice = toHalf(withIns);
+                finalLabel += "（含保险）";
+            }
+
+            els.priceValue.textContent = "￥ " + finalPrice.toFixed(2);
+            els.priceValue.classList.remove("err");
+            els.priceLabel.textContent = finalLabel;
+
+            // 输出文本
+            var lines = [];
+            lines.push("列车类型：" + (isEmu ? "动车组(" + els.emuPrefix.value + ")" : "普速列车"));
+            lines.push("运价里程：" + L + " km");
+            lines.push("席别：" + (isEmu ? els.emuSeat.options[els.emuSeat.selectedIndex].text : els.convSeat.options[els.convSeat.selectedIndex].text));
+            if (!isEmu) {
+                lines.push("等级：" + els.convClass.options[els.convClass.selectedIndex].text);
+                lines.push("空调：" + els.convAC.options[els.convAC.selectedIndex].text);
+            } else {
+                lines.push("执行折扣：" + (parseFloat(els.emuExecRate.value) * 100) + "%");
+            }
+            lines.push("优待：" + els.discount.options[els.discount.selectedIndex].text);
+            if (els.noSeat.checked) lines.push("无座：是");
+            if (els.insurance.checked) lines.push("强制保险：是(×1.02)");
+            lines.push("");
+            lines.push("最终票价：￥ " + finalPrice.toFixed(2));
+            els.output.value = lines.join("\n");
+
+            els.processBody.textContent = logLines.join("\n");
+            setStatus("计算完成。");
+        };
+
+        function applySpecialRoute(price, L, isEmu) {
+            var key = els.specialRoute.value;
+            if (key === "NONE") return null;
+            var p = num(els.specialParam, NaN);
+            if (isNaN(p)) return null;
+
+            if (key === "QINGHAI") {
+                // 每km加收：软座0.09/硬卧0.10/软卧0.16 × 参数(基准倍数)
+                // 简化：按当前席别加收（用席别近似）
+                var add = 0;
+                if (isEmu) {
+                    add = L * 0.09 * p; // 动车近似软座
+                } else {
+                    var sc = els.convSeat.value;
+                    if (/^RW_|^GR_/.test(sc)) add = L * 0.16 * p;
+                    else if (/^YW_|^YB_/.test(sc)) add = L * 0.10 * p;
+                    else add = L * 0.09 * p;
+                }
+                var np = toHalf(price + add);
+                return { price: np, applied: "每km加收×" + p + " → +" + add.toFixed(2) + " → " + np };
+            } else {
+                // GUANGSHEN / JINGJIU / CUSTOM：总上浮率
+                // 京九线 >2000km 直通不上浮
+                if (key === "JINGJIU" && L > 2000) {
+                    return { price: price, applied: ">2000km直通不上浮，无变化" };
+                }
+                var np2 = toHalf(price * p);
+                return { price: np2, applied: "总上浮×" + p + " → " + np2 };
+            }
+        }
+
+        function row(name, raw, half) {
+            return '<tr><td class="name">' + name + '</td><td>' + raw.toFixed(4) + '</td><td>' + half.toFixed(2) + '</td></tr>';
+        }
+
+        function showError(msg) {
+            els.priceValue.textContent = msg;
+            els.priceValue.classList.add("err");
+            els.priceLabel.textContent = "错误";
+            els.output.value = "";
+            els.detailBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#a00;">' + msg + '</td></tr>';
+            els.processBody.textContent = "";
+            setStatus("错误：" + msg);
+        }
+
+        /* ============ 按钮 ============ */
+        window.copyOutput = function () {
+            if (!els.output.value) { setStatus("无可复制内容。"); return; }
+            doCopy(els.output.value, "结果已复制。");
+        };
+        window.copyDetail = function () {
+            var txt = els.processBody.textContent;
+            if (!txt) { setStatus("无明细可复制。"); return; }
+            doCopy(txt, "明细已复制。");
+        };
+        function doCopy(text, okMsg) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(
+                    function () { setStatus(okMsg); },
+                    function () { fallbackCopy(text, okMsg); }
+                );
+            } else { fallbackCopy(text, okMsg); }
+        }
+        function fallbackCopy(text, okMsg) {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand("copy"); setStatus(okMsg); }
+            catch (e) { setStatus("复制失败，请手动选择。"); }
+            document.body.removeChild(ta);
+        }
+
+        window.clearAll = function () {
+            els.distance.value = "";
+            els.convRate.value = "";
+            els.emuRate.value = "";
+            els.discount.value = "NONE";
+            els.noSeat.checked = false;
+            els.insurance.checked = false;
+            els.alphaFloat.value = "";
+            els.convSeat.value = "YZ";
+            els.emuSeat.value = "ZE";
+            els.convClass.value = "ORDINARY";
+            els.convAC.value = "NONE";
+            els.convOverrail.checked = false;
+            window.onConvSeatChange();
+            window.onEmuSeatChange();
+            updateDiscountHint();
+            window.calc();
+            setStatus("已清空（特殊区段设置保留）。");
+        };
+
+        window.loadExample = function () {
+            // 示例：北京-上海 1318km 硬卧下铺 快速 新空调 全价
+            els.trainType.value = "conventional";
+            window.onTrainTypeChange();
+            els.distance.value = "1318";
+            els.convSeat.value = "YW_L";
+            window.onConvSeatChange();
+            els.convClass.value = "EXPRESS";
+            els.convAC.value = "NEWAC";
+            els.convOverrail.checked = false;
+            els.discount.value = "NONE";
+            els.noSeat.checked = false;
+            els.insurance.checked = false;
+            els.alphaFloat.value = "";
+            els.specialRoute.value = "NONE";
+            window.onSpecialRouteChange();
+            updateDiscountHint();
+            window.calc();
+        };
+
+        /* ============ 初始化 ============ */
+        window.onConvSeatChange();
+        window.onEmuSeatChange();
+        loadSpecialCookie();
+        updateDiscountHint();
+        window.calc();
+    })();
+    </script>
+</body>
+</html>
